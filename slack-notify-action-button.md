@@ -1,4 +1,12 @@
 ```
+SlackApi::message(
+    $title = '*Title*',
+    $actionText = null,
+    $actionUrl = null
+);
+```
+
+```
 <?php declare(strict_types=1);
  namespace App\Services;
  class SlackApi{
