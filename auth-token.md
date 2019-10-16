@@ -34,7 +34,7 @@ if($user = User::where('token', $token)->first()){
 }
 ```
 
-## Axios Interceptor
+## Axios Interceptor (using Quasar Cookies)
 ```
 axios.interceptors.request.use((request) => {
     request.headers = {
@@ -43,7 +43,7 @@ axios.interceptors.request.use((request) => {
 })
 axios.interceptors.response.use((response) => {
     if(response.data.user){
-        Cookies.get('api_token', response.data.user.api_token)
+        Cookies.set('api_token', response.data.user.api_token)
     }
 })
 ```
