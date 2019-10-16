@@ -57,8 +57,8 @@ export default class Validator{
         if(data.message){
             this.setMessage(data.message)
         }
-        if(data.messageBag){
-            this.setErrors(data.messageBag)
+        if(data.errors){
+            this.setErrors(data.errors)
         }
         if(data.exception){
             this.exception = data.exception
