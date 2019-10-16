@@ -1,4 +1,19 @@
 ```
+$stripeApi = app()->make('stripeApi');
+
+$transaction = $stripeApi
+    ->source($request->get('token'))
+    ->destination($seller->stripe_id)
+    ->amount($invoice->transaction_total_cents)
+    ->fee($invoice->fee_cents)
+    ->charge();
+
+if($transaction->succeeded()){
+    $invoice->pay($transaction->getId());
+}
+```
+
+```
 <?php namespace App;
 use Stripe\Stripe;
 use Stripe\Account;
@@ -133,6 +148,93 @@ class StripeApi
 	 */
 	public function getId(){
 		return $this->transaction['id'];
+	}
+}
+```
+
+
+```
+<?php namespace App\Http\Controllers\API\Stripe;
+
+use App\StripeApi;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+
+/**
+ * Manages the Stripe Connect and fetches account data for the connected user.
+ */
+class AccountController extends Controller
+{
+	protected $stripe_api;
+
+    /**
+     * Create a new controller instance.
+     * @param StripeApi $stripe_api
+     * @return void
+     */
+    public function __construct(StripeApi $stripe)
+    {
+		$this->api = $stripe;
+    }
+
+	/**
+	 * Get a connected Stripe account's temporary login URL
+	 * @param Request $request
+	 * @return \Illuminate\Http\Response
+	 */
+	public function login(Request $request){
+		try {
+			$user = $request->user();
+			if(!is_null($user->stripe_id)){
+				$stripe_login_links = $this->api->getAccount($user->stripe_id)->login_links->create();
+                return redirect($stripe_login_links->url);
+			}
+		}catch(\Stripe\Error\Base $exception) {
+			return response('Forbidden', 503);
+		}
+	}
+
+	/**
+	 * Connect a new Stripe account
+	 * @param Request $request
+	 * @return \Illuminate\Http\Response
+	 */
+	public function connect(Request $request){
+
+		$this->validate($request, array(
+			'code' => 'required|string'
+		));
+
+		if(!is_null($request->user()->stripe_id)){
+            abort(401);
+		}
+
+        try {
+            $stripeResponse = $this->api->connect($request->get('code'));
+            $user->update([
+                'stripe_id' => $stripeResponse->stripe_user_id
+            ]);
+            return response('Stripe Account Connected.');
+        }catch(\Stripe\Error\Base $e) {
+            return response(array('message' => $e->getMessage()),$e->getHttpStatus());
+        }
+	}
+
+	/**
+	 * Get a connected Stripe account's Details
+	 * @param Request $request
+	 * @return \Illuminate\Http\Response
+	 */
+	public function details(Request $request)
+    {
+		try {
+            return response()->json(array(
+                'message' => 'Stripe Account Synchronized.',
+                'stripe_account' => $this->api->getAccount($request->user()->stripe_id),
+            );
+		}catch(\Stripe\Error\Base $e) {
+		    abort(500);
+		}
 	}
 }
 ```
