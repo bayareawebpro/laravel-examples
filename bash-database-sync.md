@@ -1,3 +1,5 @@
+
+## Sync Down
 ```
 #!/usr/bin/env bash
 echo "Optimizing Remote Database..."
@@ -12,6 +14,7 @@ ssh -C forge@X.X.X.X "mysqldump --default-character-set=utf8mb4 production" | /A
 echo "Production Synchronized Successfully."
 ```
 
+## Sync Up
 ```
 #!/usr/bin/env bash
 echo "Overwriting Staging & Production is Forbidden!  Nice Try Gangsta. UnComment if you dare!"
