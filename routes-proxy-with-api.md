@@ -1,7 +1,7 @@
 
 Add "api_token" field to your user model
 
-- https://medium.com/@danielalvidrez/how-to-use-laravels-built-in-token-auth-6b6f6c26d059
+- [how-to-use-laravels-built-in-token-auth](https://medium.com/@danielalvidrez/how-to-use-laravels-built-in-token-auth-6b6f6c26d059)
 - http://laravel.local/api/resources/pages/1?api_token=XXX
 
 
