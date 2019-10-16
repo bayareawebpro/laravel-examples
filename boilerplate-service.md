@@ -9,7 +9,7 @@ $service->toArray();
 ```
 
 app()->bind(Service::class, function(){
-    return Service::make(config('my.config'));
+    return app(Service::class, config('my.config'));
 });
 
 $service = app(Service::class);
