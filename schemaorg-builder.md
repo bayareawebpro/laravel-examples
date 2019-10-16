@@ -11,10 +11,10 @@ $schema->removeAttribute('parentKey');
 $schema->toJson();
 $schema->toArray();
 $schema->toHtml();
+$schema->render();
 ```
 
-
-``````
+```
 <?php
 declare(strict_types=1);
 
