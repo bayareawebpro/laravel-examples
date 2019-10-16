@@ -86,6 +86,35 @@ class UrlGenerator extends BaseUrlGenerator
 }
 ```
 
+
+## Middleware 
+
+```
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Support\Str;
+
+class RedirectToTrailingSlash
+{
+    /**
+     * Handle an incoming request.
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return mixed
+     */
+    public function handle($request, Closure $next)
+    {
+        if(!Str::endsWith($request->getPathInfo(), ['/'])){
+            return redirect(url($request->url()), 302);
+        }
+        return $next($request);
+    }
+}
+```
+
 ## Test Case Override:
 ```
 /**
