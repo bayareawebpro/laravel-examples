@@ -1,4 +1,11 @@
 ```
+include forge-conf/site.com/server/*;
+
+...add after forge includes:
+include /home/forge/nginx-page-speed.conf;
+```
+
+```
 # Media: images, icons, video, audio, HTC
 location ~* \.(?:jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc)$ {
   expires 1M;
