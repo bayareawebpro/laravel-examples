@@ -6,8 +6,9 @@ Define the Macro:
 
 To keep the code clean and readable I pass the Query Builder instance bound to the Macro definition’s context and the callback’s single argument “$rows” to a new instance of my Macro Class.
 ```
+use App\Macros\InsertOrUpdateMany;
 use Illuminate\Database\Query\Builder;
-use App\Macros\InsertOrUpdateMany;Builder::macro('insertOrUpdateMany', function(array $rows){
+Builder::macro('insertOrUpdateMany', function(array $rows){
     return with(new InsertOrUpdateMany($this, $rows))->execute();
 });
 ```
