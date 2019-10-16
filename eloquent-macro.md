@@ -1,3 +1,48 @@
+
+Developers who are used to writing SQL statements may have trouble getting the most out of Laravel’s ORM / Query Builder. When Builder methods don’t offer the exact implementation we’re looking for it’s common to write SQL expressions using the select(DB::raw(…)) implementation.
+
+These types of statements can be written in a more eloquent way by using Laravel’s “Macros”. The operation I want to perform will be called “insertOrUpdateMany” which will build and execute a custom SQL statement with a single method call.
+Define the Macro:
+
+To keep the code clean and readable I pass the Query Builder instance bound to the Macro definition’s context and the callback’s single argument “$rows” to a new instance of my Macro Class.
+```
+use Illuminate\Database\Query\Builder;
+use App\Macros\InsertOrUpdateMany;Builder::macro('insertOrUpdateMany', function(array $rows){
+    return with(new InsertOrUpdateMany($this, $rows))->execute();
+});
+```
+A new service provider is a good place to store these definitions.
+Macro Usage:
+
+This macro will not use a chained query thats passed to it. Instead, it uses a single method call just like the “insert” method that’s already available. The expected result will be the number of rows affected by the query.
+```
+$affectedRowCount = DB::table('users')->insertOrUpdateMany(array(
+    array(
+        'id' => 1, 
+        'name' => 'Test 1', 
+        'email' => 'test1@test.local', 
+        'password' => 'XXX'
+    ),
+    array('id' => 2, 
+        'name' => 'Test 2', 
+        'email' => 'test2@test.local', 
+        'password' => 'XXX'
+    ),
+    array(
+        'id' => 3, 
+        'name' => 'Test 3', 
+        'email' => 'test3@test.local', 
+        'password' => 'XXX'
+    ),
+));
+
+dd($affectedRowCount);
+```
+
+Database Query Class
+
+The InsertOrUpdateMany Class will assemble and execute the statement against the database connection instance (bound to the Query Builder) the macro is called from. Using the affectingStatement method allows the number of affected rows to be returned to the caller. Easy as pie.
+
 ```
 <?php namespace App\Macros;
 use Illuminate\Database\Query\Builder;

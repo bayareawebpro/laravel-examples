@@ -30,9 +30,12 @@ $collection->sortByMulti([
         $currentIndex++;
         return $collection->$sortFunc($key)->groupBy($key)->map($sortBy)->ungroup();
     };
+
     /** @var \Illuminate\Support\Collection $this */
     return $sortBy($this);
 });
+
+
 /**
  * Ungroup Previously Grouped Collection
  */
@@ -44,5 +47,4 @@ $collection->sortByMulti([
     });
     return $newCollection;
 });
-
 ```
