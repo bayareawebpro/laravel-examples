@@ -1,14 +1,17 @@
 ```
+$collection->sortByMulti([
+   'state'       => 'ASC',
+   'city'        => 'ASC',
+   'size.height' => 'DESC',
+   'size.weight' => 'DESC',
+   'name'        => 'ASC',
+]);
+```
+
+```
 /**
  * Sort By Multi Macro
  * @source https://www.jjanusch.com/2017/05/laravel-collection-macros-adding-a-sortbymuti-function
- * $collection->sortByMulti([
- *    'state'       => 'ASC',
- *    'city'        => 'ASC',
- *    'size.height' => 'DESC',
- *    'size.weight' => 'DESC',
- *    'name'        => 'ASC',
- * ]);
  */
 \Illuminate\Support\Collection::macro('sortByMulti', function(array $keys) {
     $currentIndex = 0;
