@@ -2,9 +2,9 @@
 ## Split Payment
 
 ```
-$stripeApi = app()->make('stripeApi');
+$stripe = app()->make('stripeApi');
 
-$transaction = $stripeApi
+$transaction = $stripe
     ->source($request->get('token'))
     ->destination($seller->stripe_id)
     ->amount($invoice->transaction_total_cents)
@@ -20,7 +20,7 @@ if($transaction->succeeded()){
 
 ## Login Url
 ```
-$stripeApi
+$stripe
     ->getAccount($request->user()->stripe_id)
     ->login_links
     ->create();
@@ -29,13 +29,19 @@ $stripeApi
 ## Connect Account
 ```
 $request->user()->update([
-    'stripe_id' => $stripeApi->connect($request->get('code'))->stripe_user_id,
+    'stripe_id' => $stripe->connect($request->get('code'))->stripe_user_id,
 ]);
 ```
 
 ## Get Account
 ```
-$stripeApi->getAccount($user->stripe_id);
+$stripe->getAccount($user->stripe_id);
+```
+
+## Get Balance
+
+```
+$stripe->getBalance();
 ```
 
 ## API Class
