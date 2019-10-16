@@ -1,3 +1,22 @@
+
+## Model
+```
+<?php
+namespace App;
+use Illuminate\Database\Eloquent\Model;
+class Media extends Model
+{
+    protected $fillable = array(
+        'file',
+        'mime',
+        'width',
+        'height',
+        'size',
+        'hash',
+    );
+}
+```
+
 ## Field
 ```
  Image::make('File', 'file')
