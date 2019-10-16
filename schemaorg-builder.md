@@ -1,10 +1,5 @@
 ```
-$schema = SchemaBuilder::make([
-    "@type" => "WebSite",
-    "name" => "Website",
-    "alternateName" => "Website Services",
-    "url" => "https://www.website.com/",
-]);
+$schema = SchemaBuilder::make(config('my.schema.org.config'));
 $schema->setAttribute('nested.key', 'Other Name');
 $schema->hasAttribute('nested.key');
 $schema->removeAttribute('parentKey');
