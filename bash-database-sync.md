@@ -2,7 +2,7 @@
 #!/usr/bin/env bash
 echo "Optimizing Remote Database..."
 
-ssh -C forge@138.68.50.99 "cd ~/site.com/current && php artisan telescope:clear"
+ssh -C forge@X.X.X.X "cd ~/site.com/current && php artisan telescope:clear"
 
 echo "Synchronizing Remote Database..."
 ssh -C forge@X.X.X.X "mysqldump --default-character-set=utf8mb4 staging" | /Applications/MAMP/Library/bin/mysql staging
