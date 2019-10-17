@@ -1,3 +1,9 @@
 # Laravel Framework Examples & Recipes
 
-A useful collection of how-to's, examples and recipes for enhancing your Laravel Development experience.
+A useful collection of guides, examples and recipes for 
+enhancing your Laravel Development experience.
+
+## Contribute Your Snippets & Guides
+
+- Code should be concise and pertain to a single subject.
+- Submissions must be formatted as markdown documents.
