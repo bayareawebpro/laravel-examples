@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-trait Searchable{
+trait Filterable{
     public static $log = false;
 
     /**
