@@ -1,5 +1,6 @@
-Once images are optimized you don't really need multiple sizes (IMO) as they are rarely bigger then 100k.  If you want thumbnails, then you'll need to customize this implementation for your own use-case.   Simply override the **resizeAndEncode()** method.
-
+Once images are optimized you don't really need multiple sizes (IMO) 
+as they are rarely bigger then 100k.  If you want thumbnails, 
+then you'll need to customize this implementation for your own use-case.   
 
 ## Model
 ```
