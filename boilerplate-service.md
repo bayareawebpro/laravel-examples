@@ -54,9 +54,9 @@ class Service implements Arrayable{
     /**
      * Make new instance of self (expects config array entry).
      * @param array $attributes
-     * @return \Illuminate\Contracts\Foundation\Application|mixed
+     * @return Service
      */
-    public static function make(array $attributes): Contract
+    public static function make(array $attributes): Service
     {
         return app(self::class, $attributes);
     }

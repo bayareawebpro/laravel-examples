@@ -1,11 +1,20 @@
+# Validation Error Bag Manager
+
+## Vue Usage
 ```
+import Validator from './Validator'
+
 data: ()=>({
     validator: new Validator
 }),
 
-/**
-* Validator API
-*/
+axios.get('/my-route').then((response)=>{
+    ...
+})
+.catch((error)=>{
+    this.validator.sync(error.response)
+})
+
 this.validator.clear()
 this.validator.all()
 this.validator.has('myField')
@@ -21,6 +30,7 @@ this.validator.setErrors({
 })
 ```
 
+## Validator Class
 ```
 export default class Validator{
     constructor(){
