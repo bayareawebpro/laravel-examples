@@ -1,3 +1,8 @@
+## Package
+- https://github.com/teamtnt/laravel-scout-tntsearch-driver
+```
+composer require teamtnt/laravel-scout-tntsearch-driver
+```
 ## Environment
 ```
 SCOUT_DRIVER=tntsearch
