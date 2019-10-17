@@ -53,12 +53,15 @@ trait Filterable{
         if(method_exists($params, 'toArray')){
             $params = $params->toArray();
         }
+
         /** Remove Empty Parameter Fields. */
         $searchParams = collect($params)->reject(function($value, $field){
             return !isset($value);
         });
+
         /** Get the searchable rules. */
         $rules = collect($this->searchable);
+
         /**
          * Interpolate "relation" searchable fields to their requested values.
          * The field name must match the table name!
@@ -90,6 +93,8 @@ trait Filterable{
                 return [];
             }
         });
+
+
         /**
          * Interpolate "exact" searchable fields to their requested values.
          * Appended directly after relation queries.
@@ -104,6 +109,7 @@ trait Filterable{
                 }
                 return [];
             });
+
         /**
          * Interpolate "loose" searchable fields to their requested values.
          * Appended directly after "exact" queries.
@@ -118,20 +124,26 @@ trait Filterable{
                 }
                 return [];
             });
+
+
         /**
          * Query Chain
          * 1) Relation Queries.
          */
         if($relations->count()){
+
             /** Add Relation Queries. */
             $relations->each(function($params, $relation) use ($query, $searchParams){
+
                 //Insure Query Value is Array
                 $needsWhereIn = is_array($params->value);
+
                 /** @var $relatedModel Model */
                 $relatedModel = $this->getRelatedSearchableModel($query->getModel(), $relation);
                 $relatedTable = $relatedModel->getTable();
                 $relatedPrimaryKey = $relatedModel->getKeyName();
                 $whereInTableField = "$relatedTable.$relatedPrimaryKey";
+
                 switch($params->type){
                     case 'related':
                         if($needsWhereIn){
@@ -154,6 +166,7 @@ trait Filterable{
                 }
             });
         }
+
         /**
          * Query Chain
          * 2) Exact Queries.
@@ -165,6 +178,7 @@ trait Filterable{
                 });
             });
         }
+
         /**
          * Query Chain
          * 3) Loose Queries.
