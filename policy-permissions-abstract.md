@@ -3,6 +3,8 @@ You must implement your own caching, storage and logic for hasRole() && hasPermi
 
 "Authenticable MorphToMany Role, Role hasMany Permissions."
 
+This is a WIP, more to come.
+
 ## Extended Policy
 ```
 <?php
