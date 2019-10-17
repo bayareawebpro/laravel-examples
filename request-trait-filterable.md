@@ -17,7 +17,7 @@ trait Filterable{
     public function validated()
     {
         return Collection::make(parent::validated())->map(function ($value, $key) {
-            $filter = "{$key}Filter";
+            $filter = "filter" . Str::studly($key);
             if (method_exists($this, $filter)) {
                 return $this->{$filter}($value);
             }
