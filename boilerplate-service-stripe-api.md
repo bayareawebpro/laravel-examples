@@ -11,7 +11,10 @@ composer require stripe/stripe-php
 <?php namespace App;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Config;
+use Stripe\Customer;
 use Stripe\StripeObject;
+use Stripe\Subscription;
 use Stripe\Balance;
 use Stripe\Account;
 use Stripe\Stripe;
@@ -20,11 +23,14 @@ use Stripe\Charge;
 use Stripe\OAuth;
 use Stripe\Card;
 use Stripe\Plan;
-
 class StripeApi
 {
+    const CURRENCY = 'usd';
+
     public
+        $subscription,
         $transaction,
+        $customer,
         $account,
         $balance,
         $payout,
@@ -36,33 +42,43 @@ class StripeApi
     /**
      * StripeApi constructor.
      * @param Stripe $stripe
-     * @param Account $account
+     * @param Subscription $subscription
+     * @param Customer $customer
      * @param Balance $balance
+     * @param Account $account
      * @param Payout $payout
      * @param Charge $charge
-     * @param Plan $plan
      * @param Card $card
+     * @param Plan $plan
      */
     public function __construct(
+        Subscription $subscription,
         Stripe $stripe,
+        Customer $customer,
+        Balance $balance,
         Account $account,
         Payout $payout,
         Charge $charge,
-        Balance $balance,
         Card $card,
         Plan $plan
     )
     {
+        $this->stripe = $stripe;
+        $this->stripe->setClientId(Config::get('services.stripe.client'));
+        $this->stripe->setApiKey(Config::get('services.stripe.secret'));
+        $this->subscription = $subscription;
+        $this->customer = $customer;
         $this->balance = $balance;
         $this->account = $account;
         $this->payout = $payout;
         $this->charge = $charge;
-        $this->stripe = $stripe;
         $this->card = $card;
         $this->plan = $plan;
-        $this->stripe->setClientId(config()->get('services.stripe.client'));
-        $this->stripe->setApiKey(config()->get('services.stripe.secret'));
-        $this->transaction = $this->makeTransaction();
+        $this->transaction = [
+            "amount"   => 0,
+            "currency" => self::CURRENCY,
+            "source"   => null,
+        ];
     }
 
     /**
@@ -74,17 +90,39 @@ class StripeApi
         return app(self::class);
     }
 
-    /**
-     * Make Transaction Schema
-     * @return array
-     */
-    protected function makeTransaction(): array
+
+    public function createCustomerFromToken(string $token, array $attributes = []): Customer
     {
-        return [
-            "amount"   => 0,
-            "currency" => "usd",
-            "source"   => null,
-        ];
+        return $this->customer->create(array_merge([
+            "source" => $token,
+        ],$attributes));
+    }
+
+    public function subscribeToPlan(string $customer, string $planId): Subscription
+    {
+        return $this->subscription->create([
+            "customer" => $customer,
+            "items" => [
+                [ "plan" => $planId ],
+            ]
+        ]);
+    }
+
+    public function getSubscription(string $subscriptionId): Subscription
+    {
+        return $this->subscription->retrieve($subscriptionId);
+    }
+
+    public function updateSubscription(string $subscriptionId, array $meta = []): Subscription
+    {
+        return $this->subscription->update($subscriptionId, [
+            'metadata' => $meta
+        ]);
+    }
+
+    public function unSubscribeFromPlan(string $subscriptionId): Subscription
+    {
+        return $this->getSubscription($subscriptionId)->cancel();
     }
 
     /**
@@ -123,7 +161,7 @@ class StripeApi
     public function makePlan(array $params, array $options = []): Plan
     {
         return $this->getPlan($params) ?? $this->plan->create(array_merge([
-            "currency" => "usd",
+            "currency" => self::CURRENCY,
         ], $params), $options);
     }
 
@@ -273,7 +311,6 @@ class StripeApi
         return $this->transaction;
     }
 }
-
 ```
 
 
@@ -299,16 +336,12 @@ class StripeApiAccountTest extends TestCase
     const TEST_CLIENT_ID = 'sk_test_XXX';
     const TEST_ACCOUNT_ID = 'acct_XXX';
 
-    /**
-     * Setup the test environment.
-     *
-     * @return void
-     */
     protected function setUp(): void{
         parent::setUp();
         Config::set('services.stripe.client', self::TEST_KEY);
         Config::set('services.stripe.secret', self::TEST_CLIENT_ID);
     }
+  
     public function test_can_get_own_balance()
     {
         //Get the test Account.
@@ -335,8 +368,8 @@ class StripeApiAccountTest extends TestCase
     {
         $stripe = StripeApi::make();
 
-        // Token from OAuth redirect (previous step).
-        $token = 'ac_XXX';
+        //Token from previous test.
+        $token = 'ac_G0TNtnezSGNLrufBYVb4u0Ev266OdZAH';
         $response = $stripe->connect($token)->toArray();
 
         $this->assertSame(self::TEST_ACCOUNT_ID, data_get($response, 'stripe_user_id'));
@@ -422,6 +455,42 @@ class StripeApiAccountTest extends TestCase
 
         $plan->delete();
         $this->assertTrue($plan->isDeleted());
+    }
+
+    public function test_can_subscribe_to_plans()
+    {
+        //Get the test Account.
+        $stripe = StripeApi::make();
+
+        $plan = $stripe->makePlan([
+            'id' => 'gold-special',
+            "interval" => "month",
+            "currency" => "usd",
+            "amount" => 5000,
+            'metadata' => [],
+            "product" => [
+                "name" => "Gold special"
+            ],
+        ]);
+        $customer = $stripe->createCustomerFromToken('tok_visa_debit', [
+            'email' => 'test@tester.local'
+        ]);
+
+        $subscription = $stripe->subscribeToPlan($customer->id, $plan->id);
+
+        $this->assertSame($plan->id, data_get($subscription, 'plan.id'));
+        $this->assertNotEmpty(data_get($subscription, 'latest_invoice'));
+        $this->assertEmpty(data_get($subscription, 'canceled_at'));
+        $this->assertEmpty(data_get($subscription, 'ended_at'));
+
+        $this->assertArrayNotHasKey('testKey', $subscription->metadata->toArray());
+        $subscription = $stripe->updateSubscription($subscription->id, [
+            'testKey' => true
+        ]);
+        $this->assertArrayHasKey('testKey', $subscription->metadata->toArray());
+
+        $subscription = $stripe->unSubscribeFromPlan($subscription->id);
+        $this->assertNotEmpty(data_get($subscription, 'canceled_at'));
     }
 }
 ```
