@@ -12,8 +12,7 @@ public function favor(FavoriteRequest $request, Model $model)
 {
     $model->rate($request->user(), $request->validationData());
     $model->isRated;
-    User::ratings()->count();
-    Model::ratedBy($request->user())->paginate(10);
+    $model->rating;
 }
 ```
 
@@ -65,30 +64,37 @@ class RatingRequest extends FormRequest
 <?php declare(strict_types=1);
 
 namespace App\Models\Traits;
-
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use App\Models\Rating;
+use App\Models\User;
 
-interface Rateable{
+trait RateableTrait{
 
     /**
      * Ratings Relation
-     * @return MorphToMany
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
-    public function ratings(): MorphToMany;
+    public function ratings(){
+        return $this->morphMany(Rating::class, 'model');
+    }
 
     /**
      * Get Is Rated Attribute
      * @return bool
      */
-    public function getIsRatedAttribute(): bool;
+    public function getIsRatedAttribute(): bool
+    {
+        return (bool) $this->ratings()->where('ratings.user_id', optional(request()->user())->id)->exists();
+    }
 
     /**
      * Get Rated Attribute
      * @return int
      */
-    public function getRatingAttribute(): int;
+    public function getRatingAttribute(): int
+    {
+        return (int) round($this->ratings()->average('rating'));
+    }
 
     /**
      * Get Articles for User
@@ -97,7 +103,17 @@ interface Rateable{
      * @return self
      * @throws \Throwable
      */
-    public function rate(User $user, array $data): self;
+    public function rate(User $user, array $data)
+    {
+        if ($model = $this->ratings()->ownedBy($user)->first()) {
+            $model->update($data);
+        } else {
+            $model = new Rating($data);
+            $model->user()->associate($user);
+            $this->ratings()->save($model);
+        }
+        return $this;
+    }
 
     /**
      * Rated By Ownable
@@ -105,7 +121,12 @@ interface Rateable{
      * @param User $user
      * @return Builder
      */
-    public function scopeRatedBy(Builder $query, User $user): Builder;
+    public function scopeRatedBy(Builder $query, User $user): Builder
+    {
+        return $query->whereHas('ratings', function(Builder $query) use ($user){
+             $query->where('user_id', $user->id);
+        });
+    }
 }
 ```
 
