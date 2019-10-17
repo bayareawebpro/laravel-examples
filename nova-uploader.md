@@ -14,6 +14,14 @@ class Media extends Model
         'size',
         'hash',
     );
+    
+    public function getPreviewAttribute(){
+        //ToDo: Resolve Media CDN Origin or StoragePath.
+    }
+    
+    public function getUrlAttribute(){
+        //ToDo: Resolve Media CDN Edge or StoragePath.
+    }
 }
 ```
 
