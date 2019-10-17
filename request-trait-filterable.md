@@ -7,6 +7,7 @@ Will call a possible filter method for every property.
 <?php declare(strict_types=1);
 
 namespace App\Http\Requests\Traits;
+use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
 
 trait Filterable{
