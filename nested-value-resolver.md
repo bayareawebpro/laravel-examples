@@ -32,7 +32,7 @@ class NestedValueResolver
     public static function resolveFirst(Model $model, array $keys)
     {
         $result = null;
-        with(new Collection($keys))->each(function ($dotSyntax) use ($model, &$result) {
+        Collection::make($keys)->each(function ($dotSyntax) use ($model, &$result) {
             return is_null($result = object_get($model, $dotSyntax, null));
         });
         return $result;
@@ -46,7 +46,7 @@ class NestedValueResolver
      */
     public static function resolveAll(Model $model, array $keys)
     {
-        return with(new Collection($keys))
+        return Collection::make($keys)
             ->transform(function ($dotSyntax) use ($model) {
                 return object_get($model, $dotSyntax, null);
             })
