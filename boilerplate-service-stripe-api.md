@@ -397,7 +397,9 @@ class StripeApi
 ## Unit Tests
 
 - Uses real api, update to use mocks, dump responses to get the schema.
-- Create a Test Customer Account to Account & OAuth Steps
+- Create a Test Customer Account Before Usage
+- Find the Test Customer Account ID under your account settings page @ Stripe.
+
 
 ```
 <?php namespace Tests\Feature;
