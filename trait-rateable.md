@@ -84,7 +84,7 @@ trait RateableTrait{
      */
     public function getIsRatedAttribute(): bool
     {
-        return (bool) $this->ratings()->where('ratings.user_id', optional(request()->user())->id)->exists();
+        return (bool) $this->ratedBy(request()->user())->exists();
     }
 
     /**
@@ -124,7 +124,7 @@ trait RateableTrait{
     public function scopeRatedBy(Builder $query, User $user): Builder
     {
         return $query->whereHas('ratings', function(Builder $query) use ($user){
-             $query->where('user_id', $user->id);
+             $query->where('user_id', optional($user)->id);
         });
     }
 }
