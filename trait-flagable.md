@@ -67,12 +67,15 @@ trait FlaggableTrait{
     }
 
     /**
-     * Get Is Bookmarked Attribute
+     * Get Is Flagged Attribute
      * @return bool
      */
     public function getIsFlaggedAttribute(): bool
     {
-        return (bool) $this->flagged()->exists();
+        if($user = request()->user()){
+            return (bool) $this->flaggedBy($user)->exists();
+        }
+        return false;
     }
 
     /**
@@ -84,7 +87,7 @@ trait FlaggableTrait{
     public function flag(User $user, array $data):self
     {
         if($this->isFlagged){
-            $this->flaggedBy(request()->user())->delete();
+            $this->flagged()->where('user_id', $user->id)->delete();
         }else{
             $model = new Flagged($data);
             $model->user()->associate($user);

@@ -84,7 +84,10 @@ trait RateableTrait{
      */
     public function getIsRatedAttribute(): bool
     {
-        return (bool) $this->ratedBy(request()->user())->exists();
+        if($user = request()->user()){
+            return (bool) $this->ratedBy($user)->exists();
+        }
+        return false;
     }
 
     /**
@@ -105,8 +108,11 @@ trait RateableTrait{
      */
     public function rate(User $user, array $data)
     {
-        if ($model = $this->ratings()->ownedBy($user)->first()) {
-            $model->update($data);
+        if ($this->isRated) {
+            $this
+                ->ratings()
+                ->where('user_id', $user->id)
+                ->update($data);
         } else {
             $model = new Rating($data);
             $model->user()->associate($user);
@@ -124,7 +130,7 @@ trait RateableTrait{
     public function scopeRatedBy(Builder $query, User $user): Builder
     {
         return $query->whereHas('ratings', function(Builder $query) use ($user){
-             $query->where('user_id', optional($user)->id);
+             $query->where('user_id', $user->id);
         });
     }
 }

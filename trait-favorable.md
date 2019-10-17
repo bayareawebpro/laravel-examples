@@ -84,10 +84,10 @@ trait FavorableTrait{
      */
     public function getIsFavoredAttribute(): bool
     {
-        return (bool) $this
-            ->favorites()
-            ->where('favorites.user_id', optional(request()->user())->id)
-            ->exists();
+        if($user = request()->user()){
+            return (bool) $this->favoredBy($user)->exists();
+        }
+        return false;
     }
 
     /**
@@ -98,7 +98,7 @@ trait FavorableTrait{
     public function favor(User $user):self
     {
         if ($this->isFavored) {
-            $this->favoredBy(request()->user())->delete();
+            $this->favorites()->where('user_id', $user->id)->delete();
         } else {
             $model = new Favorite();
             $model->user()->associate($user);
