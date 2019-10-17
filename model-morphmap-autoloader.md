@@ -18,7 +18,6 @@ $morphMap = Collection::make(get_declared_classes())
        );
    })
    ->mapWithKeys(function($class){
-       dump($class);
        $mapName = Str::snake(Str::plural(class_basename($class)));
        return [$mapName => $class];
    })
