@@ -1,3 +1,9 @@
+
+You must implement your own caching, storage and logic for hasRole() && hasPermission() methods in your user model.
+
+"Authenticable MorphToMany Role, Role hasMany Permissions."
+
+## Extended Policy
 ```
 <?php
 namespace App\Policies;
@@ -21,7 +27,7 @@ class DefaultPolicyTemplate extends AbstractPolicy
 
 ```
 
-
+## Abstract Policy
 ```
 <?php
 namespace App\Policies;
@@ -43,7 +49,7 @@ abstract class AbstractPolicy
     {
         /** @var $user User */
         return (
-            $user->isRole('admin') ||
+            $user->hasRole('admin') ||
             $user->hasPermission("{$this::$SCOPE}:all") ||
             $user->hasPermission("{$this::$SCOPE}:view_any")
         );
@@ -59,7 +65,7 @@ abstract class AbstractPolicy
     {
         /** @var $user User */
         return (
-            $user->isRole('admin') ||
+            $user->hasRole('admin') ||
             $user->hasPermission("{$this::$SCOPE}:all") ||
             $user->hasPermission("{$this::$SCOPE}:view:{$model->id}")
         );
@@ -74,7 +80,7 @@ abstract class AbstractPolicy
     {
         /** @var $user User */
         return (
-            $user->isRole('admin') ||
+            $user->hasRole('admin') ||
             $user->hasPermission("{$this::$SCOPE}:all") ||
             $user->hasPermission("{$this::$SCOPE}:create")
         );
@@ -90,7 +96,7 @@ abstract class AbstractPolicy
     {
         /** @var $user User */
         return (
-            $user->isRole('admin') ||
+            $user->hasRole('admin') ||
             $user->hasPermission("{$this::$SCOPE}:all") ||
             $user->hasPermission("{$this::$SCOPE}:update_any") ||
             $user->hasPermission("{$this::$SCOPE}:update:{$model->id}")
@@ -107,7 +113,7 @@ abstract class AbstractPolicy
     {
         /** @var $user User */
         return (
-            $user->isRole('admin') ||
+            $user->hasRole('admin') ||
             $user->hasPermission("{$this::$SCOPE}:all") ||
             $user->hasPermission("{$this::$SCOPE}:delete_any") ||
             $user->hasPermission("{$this::$SCOPE}:delete:{$model->id}")
@@ -124,7 +130,7 @@ abstract class AbstractPolicy
     {
         /** @var $user User */
         return (
-            $user->isRole('admin') ||
+            $user->hasRole('admin') ||
             $user->hasPermission("{$this::$SCOPE}:all") ||
             $user->hasPermission("{$this::$SCOPE}:force_delete_any") ||
             $user->hasPermission("{$this::$SCOPE}:force_delete:{$model->id}")
@@ -141,7 +147,7 @@ abstract class AbstractPolicy
     {
         /** @var $user User */
         return (
-            $user->isRole('admin') ||
+            $user->hasRole('admin') ||
             $user->hasPermission("{$this::$SCOPE}:all") ||
             $user->hasPermission("{$this::$SCOPE}:restore_any") ||
             $user->hasPermission("{$this::$SCOPE}:restore:{$model->id}")
