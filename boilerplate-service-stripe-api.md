@@ -8,13 +8,15 @@ composer require stripe/stripe-php
 
 ## API Class
 ```
-<?php namespace App;
+<?php declare(strict_types=1);
 
-use Illuminate\Support\Arr;
+namespace App;
+
 use Illuminate\Support\Facades\Config;
-use Stripe\Customer;
+use Illuminate\Support\Arr;
 use Stripe\StripeObject;
 use Stripe\Subscription;
+use Stripe\Customer;
 use Stripe\Balance;
 use Stripe\Account;
 use Stripe\Stripe;
@@ -23,6 +25,7 @@ use Stripe\Charge;
 use Stripe\OAuth;
 use Stripe\Card;
 use Stripe\Plan;
+
 class StripeApi
 {
     const CURRENCY = 'usd';
@@ -90,41 +93,6 @@ class StripeApi
         return app(self::class);
     }
 
-
-    public function createCustomerFromToken(string $token, array $attributes = []): Customer
-    {
-        return $this->customer->create(array_merge([
-            "source" => $token,
-        ],$attributes));
-    }
-
-    public function subscribeToPlan(string $customer, string $planId): Subscription
-    {
-        return $this->subscription->create([
-            "customer" => $customer,
-            "items" => [
-                [ "plan" => $planId ],
-            ]
-        ]);
-    }
-
-    public function getSubscription(string $subscriptionId): Subscription
-    {
-        return $this->subscription->retrieve($subscriptionId);
-    }
-
-    public function updateSubscription(string $subscriptionId, array $meta = []): Subscription
-    {
-        return $this->subscription->update($subscriptionId, [
-            'metadata' => $meta
-        ]);
-    }
-
-    public function unSubscribeFromPlan(string $subscriptionId): Subscription
-    {
-        return $this->getSubscription($subscriptionId)->cancel();
-    }
-
     /**
      * Get Login Url
      * @param string $redirectUri
@@ -141,6 +109,19 @@ class StripeApi
 
     /**
      * @param array $params
+     * @param array $options
+     * @return Plan
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    public function makePlan(array $params, array $options = []): Plan
+    {
+        return $this->getPlan($params) ?? $this->plan->create(array_merge([
+                "currency" => self::CURRENCY,
+            ], $params), $options);
+    }
+
+    /**
+     * @param array $params
      * @return Plan|null
      */
     public function getPlan(array $params)
@@ -153,19 +134,6 @@ class StripeApi
     }
 
     /**
-     * @param array $params
-     * @param array $options
-     * @return Plan
-     * @throws \Stripe\Exception\ApiErrorException
-     */
-    public function makePlan(array $params, array $options = []): Plan
-    {
-        return $this->getPlan($params) ?? $this->plan->create(array_merge([
-            "currency" => self::CURRENCY,
-        ], $params), $options);
-    }
-
-    /**
      * Update Plan
      * @param array $params
      * @return Plan
@@ -174,6 +142,73 @@ class StripeApi
     public function updatePlan(array $params): Plan
     {
         return $this->plan->update(Arr::get($params, 'id'), Arr::except($params, 'id'));
+    }
+
+    /**
+     * Create Customer From Token
+     * @param string $token
+     * @param array $attributes
+     * @return Customer
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    public function createCustomerFromToken(string $token, array $attributes = []): Customer
+    {
+        return $this->customer->create(array_merge([
+            "source" => $token,
+        ],$attributes));
+    }
+
+    /**
+     * Subscribe Customer to Plan
+     * @param string $customer
+     * @param string $planId
+     * @return Subscription
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    public function subscribeToPlan(string $customer, string $planId): Subscription
+    {
+        return $this->subscription->create([
+            "customer" => $customer,
+            "items" => [
+                [ "plan" => $planId ],
+            ]
+        ]);
+    }
+
+    /**
+     * Get Subscription
+     * @param string $subscriptionId
+     * @return Subscription
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    public function getSubscription(string $subscriptionId): Subscription
+    {
+        return $this->subscription->retrieve($subscriptionId);
+    }
+
+    /**
+     * Update Subscription Meta
+     * @param string $subscriptionId
+     * @param array $meta
+     * @return Subscription
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    public function updateSubscription(string $subscriptionId, array $meta = []): Subscription
+    {
+        return $this->subscription->update($subscriptionId, [
+            'metadata' => $meta
+        ]);
+    }
+
+    /**
+     * UnSubscribe from Plan
+     * @param string $subscriptionId
+     * @return Subscription
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    public function unSubscribeFromPlan(string $subscriptionId): Subscription
+    {
+        return $this->getSubscription($subscriptionId)->cancel();
     }
 
     /**
@@ -313,6 +348,7 @@ class StripeApi
 }
 ```
 
+---
 
 ## Unit Tests
 
