@@ -68,7 +68,7 @@ class PostRequest extends FormRequest
      * @param $value
      * @return string
      */
-    protected function contentFilter($value)
+    protected function filterContent($value)
     {
         return strip_tags((string) $value, Collection::make([
             'table', 'thead', 'tbody', 'tfoot', 'th', 'tr', 'td',
