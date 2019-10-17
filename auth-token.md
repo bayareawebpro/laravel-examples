@@ -21,15 +21,16 @@ $table->string('api_token', 60)->unique()->nullable()->default(null);
 ## Token Generator
 ```
 <?php
-$user = User::first($id)
 
 do {
     $token = Str::random(128);
-} while (User::where('token', $token)->exists());
-$user->token = $token;
+} while (User::where('api_token', $token)->exists());
+
+$user = User::first($id)
+$user->api_token = $token;
 $user->save();
 
-if($user = User::where('token', $token)->first()){
+if($user = User::where('api_token', $token)->first()){
     //Do Something
 }
 ```
