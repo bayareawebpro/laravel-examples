@@ -44,11 +44,11 @@ class StripeApi
 
     /**
      * StripeApi constructor.
-     * @param Stripe $stripe
      * @param Subscription $subscription
      * @param Customer $customer
      * @param Balance $balance
      * @param Account $account
+     * @param Stripe $stripe
      * @param Payout $payout
      * @param Charge $charge
      * @param Card $card
@@ -56,10 +56,10 @@ class StripeApi
      */
     public function __construct(
         Subscription $subscription,
-        Stripe $stripe,
         Customer $customer,
         Balance $balance,
         Account $account,
+        Stripe $stripe,
         Payout $payout,
         Charge $charge,
         Card $card,
@@ -117,6 +117,7 @@ class StripeApi
     {
         return $this->getPlan($params) ?? $this->plan->create(array_merge([
                 "currency" => self::CURRENCY,
+                "interval" => "month",
             ], $params), $options);
     }
 
