@@ -3,7 +3,7 @@
 Use case: need to resolve many different classes from one entry point without importing any classes.
 
 ```
-$entityFactory = EntityFactory::fromNamespace('App\Factories');
+$entityFactory = EntityFactory::fromNamespace('App\Entities');
 
 $car = $entityFactory->make('car', ['name' => 'Sedan']);
 $car->drive();
@@ -23,7 +23,7 @@ class EntityFactory{
     
     private $namespace;
     
-    public function __construct($namespace = '\\App\\Entity')
+    public function __construct($namespace = 'App\Entities')
     {
         $this->namespace = $namespace;
     }
@@ -43,7 +43,7 @@ class EntityFactory{
 
 ## Example Classes
 ```
-namespace App\Models;
+namespace App\Entities;
 class Car{
     
     public function __construct(string $name){
