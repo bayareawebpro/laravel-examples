@@ -1,3 +1,9 @@
+### Stripe API Example
+
+- Needs Refactoring
+
+https://github.com/stripe/stripe-php
+
 
 ## Split Payment
 
