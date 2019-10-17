@@ -1,7 +1,9 @@
+## Trait
+
 ```
 <?php
 namespace App\Traits;
-trait HasMemoization
+trait Memoize
 {
     protected static $memoized = [];
     /**
@@ -20,6 +22,7 @@ trait HasMemoization
 }
 ```
 
+## Interface
 ```
 return $this->memoize('my-key', function () {
     return //some result;

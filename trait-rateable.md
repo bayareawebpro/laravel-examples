@@ -242,3 +242,15 @@ class Rating extends Model{
     }
 }
 ```
+
+## User Model Relation
+```
+/**
+ * Ratings
+ * @return \Illuminate\Database\Eloquent\Relations\hasMany
+ */
+public function ratings()
+{
+    return $this->hasMany(Rating::class);
+}
+```

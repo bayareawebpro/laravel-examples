@@ -236,3 +236,15 @@ class Flagged extends Model{
     }
 }
 ```
+
+## User Model Relation
+```
+/**
+ * Flagged
+ * @return \Illuminate\Database\Eloquent\Relations\hasMany
+ */
+public function flagged()
+{
+    return $this->hasMany(Flagged::class);
+}
+```
