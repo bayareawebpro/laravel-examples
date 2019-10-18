@@ -13,33 +13,6 @@ $table->string('group')->default(null); //Any type
 
 ## Usage
 ```
-class Post extends Model
-{
-    use Orderable;
-    
-    // Group by attribute with seperate order index.
-    protected $orderGroup = 'group';
-
-    protected $attributes = [
-        'group'=> 'my-group' //Deafult Group
-    ];
-
-    protected $fillable = [
-        'order',
-        'group',
-    ];
-
-    // Required for UnitTesting with SqlLite
-    protected $casts = [
-        'order'=> 'int'
-    ];
-}
-
-```
-
-### Trait
-
-```
 <?php namespace App\Traits;
 
 use Illuminate\Support\Facades\DB;
@@ -85,7 +58,7 @@ trait Orderable
     }
 
     /**
-     * Set Active Order Group
+     * Update Order Group
      * @param string|int $orderGroup
      * @return self
      */
@@ -93,17 +66,9 @@ trait Orderable
     {
         if(isset($orderGroup)){
             DB::transaction(function () use ($orderGroup){
-                //Set as highest in new group.
                 $this->setAttribute($this->orderGroup, $orderGroup);
                 $this->setAttribute('order', null);
                 $this->save();
-
-                //Decrement Previous Highest as Same Order.
-                static::newQuery()
-                    ->scopes(['orderGroup'])
-                    ->where('order', $this->getAttribute('order'))
-                    ->whereKeyNot($this->getKey())
-                    ->increment('order');
             });
         }
         return $this;
@@ -116,9 +81,9 @@ trait Orderable
      */
     public function scopeOrderGroup(Builder $builder, $orderGroup = null): void
     {
-        $this->updateOrderGroup($orderGroup);
-        if (isset($this->orderGroup)) {
-            $builder->where($this->orderGroup, $this->getAttribute($this->orderGroup));
+        $orderGroup = $orderGroup ?? $this->orderGroup;
+        if (isset($orderGroup)) {
+            $builder->where($orderGroup, $this->getAttribute($orderGroup));
         }
     }
 
@@ -305,6 +270,7 @@ class OrderableTest extends TestCase
         $this->assertTrue($postB->order === 2, 'B 2');
         $this->assertTrue($postC->order === 3, 'C 3');
         $this->assertTrue($postD->order === 4, 'D 4');
+        $this->assertTrue($postE->order === 5, 'E 5');
 
         //Increment 2nd Highest Value
         $postC->incrementOrder();
