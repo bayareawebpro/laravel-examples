@@ -85,10 +85,24 @@ trait Orderable
     }
 
     /**
-     * @param Builder $builder
+     * Set Active Order Group
+     * @param string|int $orderGroup
      */
-    public function scopeOrderGroup(Builder $builder): void
+    public function setOrderGroup($orderGroup = null): void
     {
+        if(isset($orderGroup)){
+            $this->orderGroup = $orderGroup;
+        }
+    }
+
+    /**
+     * Scope Order Group
+     * @param Builder $builder
+     * @param mixed $orderGroup
+     */
+    public function scopeOrderGroup(Builder $builder, $orderGroup = null): void
+    {
+        $this->setOrderGroup($orderGroup);
         if (isset($this->orderGroup)) {
             $builder->where($this->orderGroup, $this->getAttribute($this->orderGroup));
         }
