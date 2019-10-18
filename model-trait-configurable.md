@@ -1,3 +1,21 @@
+## Usage
+- Keep in mind it's a collection.  
+- You may need to re-assign to itself if you use filter methods etc...
+
+```
+$user = request()->user();
+
+if($user->settings->get('subscribed', false)){
+    $user->settings->forget('subscribed');
+}
+
+if(!$user->settings->has('notify')){
+    $user->settings->put('notify', true);
+}
+
+$user->save();
+```
+
 ## Configurable Trait
 ```
 <?php declare(strict_types=1);
