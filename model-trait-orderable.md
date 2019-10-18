@@ -1,6 +1,7 @@
 # Orderable Trait
 
 > Contributor: https://github.com/codemonkey76
+
 > Refactoring & Testing: https://github.com/bayareawebpro
 
 ## Schema
