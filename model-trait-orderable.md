@@ -16,7 +16,7 @@ class Post extends Model
 {
     use Orderable;
     
-    // Groupable orderable items.
+    // Group by attribute with seperate order index.
     protected $orderGroup = 'group';
 
     protected $attributes = [
