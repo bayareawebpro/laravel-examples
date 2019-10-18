@@ -65,10 +65,12 @@ $reviews = Repository::make()
            )->toArray();
     })->values();
 
-SchemaBuilder::make(config('cms.schema.organization'))->setAttributes([
+$schema = SchemaBuilder::make(config('cms.schema.organization'), [
     "aggregateRating" => config('cms.schema.aggregateRating'),
     "reviews" => $reviews,
 ]);
+
+app('schemaOrg')->push($schema);
 ```
 
 ## Schema Builder Class
