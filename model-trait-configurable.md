@@ -1,4 +1,4 @@
-## Usage
+## Attribute Usage
 - Keep in mind it's a collection.  
 - You may need to re-assign to itself if you use filter methods etc...
 
@@ -14,6 +14,11 @@ if(!$user->settings->has('notify')){
 }
 
 $user->save();
+```
+
+## Query Usage
+```
+$notifiableUsers = User::where('settings->notify', true)->count();
 ```
 
 ## Configurable Trait
