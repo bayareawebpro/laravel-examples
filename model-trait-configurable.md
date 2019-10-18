@@ -47,7 +47,7 @@ trait Configurable{
      */
     public static function bootConfigurable(){
         static::creating(function(Model $model){
-            $model->setAttribute('settings', $model->defaultSettings());
+            $model->setAttribute('settings', self::defaultSettings());
         });
     }
 }
