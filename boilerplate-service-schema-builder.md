@@ -56,14 +56,18 @@ $schema->render();
 ```
 
 ```
-SchemaBuilder::make(config('cms.schema.organization'))
-->setAttributes([
+$reviews = Repository::make()
+    ->testimonials(['great','amazing','recommended'],4)
+    ->map(function($entry){
+       return SchemaBuilder::make(
+               config('cms.schema.organization'), 
+               $entry->toArray()
+           )->toArray();
+    })->values();
+
+SchemaBuilder::make(config('cms.schema.organization'))->setAttributes([
     "aggregateRating" => config('cms.schema.aggregateRating'),
-    "reviews" => Repository::make()
-        ->testimonials(['great','amazing','recommended'],4)
-        ->map(function($entry){
-            return Review::make($entry)->toArray();
-        })->values(),
+    "reviews" => $reviews,
 ]);
 ```
 
