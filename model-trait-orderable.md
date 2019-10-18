@@ -56,10 +56,11 @@ trait Orderable
 
     /**
      * Increment Order & Swap
+     * @return bool
      */
-    public function incrementOrder(): void
+    public function incrementOrder(): bool
     {
-        if ($this->getAttribute('isHighestOrder')) return;
+        if ($this->getAttribute('isHighestOrder')) return false;
         DB::transaction(function () {
             static::newQuery()
                 ->scopes(['orderGroup'])
@@ -69,14 +70,16 @@ trait Orderable
             $this->increment('order');
             $this->save();
         });
+        return true;
     }
 
     /**
      * Decrement Order & Swap
+     * @return bool
      */
-    public function decrementOrder(): void
+    public function decrementOrder(): bool
     {
-        if ($this->getAttribute('isLowestOrder')) return;
+        if ($this->getAttribute('isLowestOrder')) return false;
         DB::transaction(function () {
             static::newQuery()
                 ->scopes(['orderGroup'])
@@ -86,21 +89,18 @@ trait Orderable
             $this->decrement('order');
             $this->save();
         });
+        return true;
     }
 
     /**
-     * Update Order Group
+     * Set Active Order Group
      * @param string|int $orderGroup
      * @return self
      */
-    public function updateOrderGroup($orderGroup = null): self
+    public function setOrderGroup($orderGroup = null): self
     {
         if(isset($orderGroup)){
-            DB::transaction(function () use ($orderGroup){
-                $this->setAttribute($this->orderGroup, $orderGroup);
-                $this->setAttribute('order', null);
-                $this->save();
-            });
+            $this->orderGroup = $orderGroup;
         }
         return $this;
     }
@@ -112,9 +112,9 @@ trait Orderable
      */
     public function scopeOrderGroup(Builder $builder, $orderGroup = null): void
     {
-        $orderGroup = $orderGroup ?? $this->orderGroup;
-        if (isset($orderGroup)) {
-            $builder->where($orderGroup, $this->getAttribute($orderGroup));
+        $this->setOrderGroup($orderGroup);
+        if (isset($this->orderGroup)) {
+            $builder->where($this->orderGroup, $this->getAttribute($this->orderGroup));
         }
     }
 
@@ -183,12 +183,50 @@ trait Orderable
     }
 
     /**
+     * Move to beginning of group
+     * @return void
+     */
+    public function moveToBeginning()
+    {
+        while ($this->incrementOrder()){}
+    }
+
+    /**
+     * Move to end of group
+     * @return void
+     */
+    public function moveToEnd()
+    {
+        while ($this->decrementOrder()){}
+    }
+
+    /**
+     * Update Order Group
+     * @param string|int $orderGroup
+     * @return self
+     */
+    public function updateOrderGroup($orderGroup = null): self
+    {
+        if (isset($orderGroup)) {
+            DB::transaction(function () use ($orderGroup) {
+                $this->moveToEnd();
+                $this->setAttribute($this->orderGroup, $orderGroup);
+                $this->setAttribute('order', null);
+                $this->save();
+            });
+        }
+
+        return $this;
+    }
+
+    /**
      * Boot Orderable Trait
      * @return void
      */
     public static function bootOrderable()
     {
         static::saving(function (Model $model) {
+
             if(empty($model->getAttribute('order'))){
                 $model->setAttribute('order', $model->getAttribute('highestOrder') + 1);
             }
