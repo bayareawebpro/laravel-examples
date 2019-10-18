@@ -89,10 +89,22 @@ trait Orderable
      * @param string|int $orderGroup
      * @return self
      */
-    public function setOrderGroup($orderGroup = null): self
+    public function updateOrderGroup($orderGroup = null): self
     {
         if(isset($orderGroup)){
-            $this->orderGroup = $orderGroup;
+            DB::transaction(function () use ($orderGroup){
+                //Set as highest in new group.
+                $this->setAttribute($this->orderGroup, $orderGroup);
+                $this->setAttribute('order', null);
+                $this->save();
+
+                //Decrement Previous Highest as Same Order.
+                static::newQuery()
+                    ->scopes(['orderGroup'])
+                    ->where('order', $this->getAttribute('order'))
+                    ->whereKeyNot($this->getKey())
+                    ->increment('order');
+            });
         }
         return $this;
     }
@@ -104,7 +116,7 @@ trait Orderable
      */
     public function scopeOrderGroup(Builder $builder, $orderGroup = null): void
     {
-        $this->setOrderGroup($orderGroup);
+        $this->updateOrderGroup($orderGroup);
         if (isset($this->orderGroup)) {
             $builder->where($this->orderGroup, $this->getAttribute($this->orderGroup));
         }
@@ -181,14 +193,12 @@ trait Orderable
     public static function bootOrderable()
     {
         static::saving(function (Model $model) {
-
             if(empty($model->getAttribute('order'))){
                 $model->setAttribute('order', $model->getAttribute('highestOrder') + 1);
             }
         });
     }
 }
-
 ```
 
 ## Unit Test
@@ -230,13 +240,6 @@ class OrderableTest extends TestCase
         $postD->refresh();
         $postE->refresh();
 
-        dump(Collection::make([
-            "A" => $postA->toArray(),
-            "B" => $postB->toArray(),
-            "C" => $postC->toArray(),
-            "D" => $postD->toArray(),
-            "E" => $postE->toArray(),
-        ])->sort());
 
         $this->assertTrue($postA->lowestOrder === 1, 'A => 1 lowestOrder');
         $this->assertTrue($postA->highestOrder === 4, 'A => 4  highestOrder');
@@ -249,8 +252,22 @@ class OrderableTest extends TestCase
 
         $this->assertTrue($postE->order === 1, 'E 1');
         $this->assertTrue($postE->group === 'alternate', 'E group');
-        $this->assertTrue($postE->isLowestOrder, 'A self lowest');
-        $this->assertTrue($postE->isHighestOrder, 'D self highest');
+        $this->assertTrue($postE->isLowestOrder, 'E self lowest');
+        $this->assertTrue($postE->isHighestOrder, 'E self highest');
+
+
+        $postE->updateOrderGroup('base');
+        $postA->refresh();
+        $postB->refresh();
+        $postC->refresh();
+        $postD->refresh();
+        $postE->refresh();
+
+
+        $this->assertTrue($postE->order === 5, 'E 5');
+        $this->assertTrue($postE->group === 'base', 'E group');
+        $this->assertFalse($postE->isLowestOrder, 'E self lowest');
+        $this->assertTrue($postE->isHighestOrder, 'E self highest');
 
         //Ignore Decrement of Lowest
         $postA->decrementOrder();
@@ -258,10 +275,12 @@ class OrderableTest extends TestCase
         $postB->refresh();
         $postC->refresh();
         $postD->refresh();
+        $postE->refresh();
         $this->assertTrue($postA->order === 1, 'A 1');
         $this->assertTrue($postB->order === 2, 'B 2');
         $this->assertTrue($postC->order === 3, 'C 3');
         $this->assertTrue($postD->order === 4, 'D 4');
+        $this->assertTrue($postE->order === 5, 'E 5');
 
         //Increment Lowest Value
         $postA->incrementOrder();
@@ -273,6 +292,7 @@ class OrderableTest extends TestCase
         $this->assertTrue($postB->order === 1, 'B 1');
         $this->assertTrue($postC->order === 3, 'C 3');
         $this->assertTrue($postD->order === 4, 'D 4');
+        $this->assertTrue($postE->order === 5, 'E 5');
 
         //Increment New Lowest Value
         $postB->incrementOrder();
@@ -280,6 +300,7 @@ class OrderableTest extends TestCase
         $postB->refresh();
         $postC->refresh();
         $postD->refresh();
+        $postE->refresh();
         $this->assertTrue($postA->order === 1, 'A 1');
         $this->assertTrue($postB->order === 2, 'B 2');
         $this->assertTrue($postC->order === 3, 'C 3');
@@ -291,10 +312,12 @@ class OrderableTest extends TestCase
         $postB->refresh();
         $postC->refresh();
         $postD->refresh();
+        $postE->refresh();
         $this->assertTrue($postA->order === 1, 'A 1');
         $this->assertTrue($postB->order === 2, 'B 2');
         $this->assertTrue($postC->order === 4, 'C 4');
         $this->assertTrue($postD->order === 3, 'D 3');
+        $this->assertTrue($postE->order === 5, 'E 5');
 
         //Increment 2nd Highest Value
         $postD->incrementOrder();
@@ -302,27 +325,40 @@ class OrderableTest extends TestCase
         $postB->refresh();
         $postC->refresh();
         $postD->refresh();
-        $this->assertTrue($postA->order === 1, 'A');
-        $this->assertTrue($postB->order === 2, 'B');
-        $this->assertTrue($postC->order === 3, 'C');
-        $this->assertTrue($postD->order === 4, 'D');
+        $postE->refresh();
+        $this->assertTrue($postA->order === 1, 'A 1');
+        $this->assertTrue($postB->order === 2, 'B 2');
+        $this->assertTrue($postC->order === 3, 'C 3');
+        $this->assertTrue($postD->order === 4, 'D 4');
+        $this->assertTrue($postE->order === 5, 'E 5');
 
-        //Ignore Increment of Highest
-        $postD->incrementOrder();
-        $postA->refresh();
-        $postB->refresh();
-        $postC->refresh();
-        $postD->refresh();
-        $this->assertTrue($postA->order === 1, 'A');
-        $this->assertTrue($postB->order === 2, 'B');
-        $this->assertTrue($postC->order === 3, 'C');
-        $this->assertTrue($postD->order === 4, 'D');
 
         dump(Collection::make([
             "A" => $postA->order,
             "B" => $postB->order,
             "C" => $postC->order,
             "D" => $postD->order,
+            "E" => $postE->order,
+        ])->sort());
+        //Ignore Increment of Highest
+        $postE->incrementOrder();
+        $postA->refresh();
+        $postB->refresh();
+        $postC->refresh();
+        $postD->refresh();
+        $postE->refresh();
+        $this->assertTrue($postA->order === 1, 'A 1');
+        $this->assertTrue($postB->order === 2, 'B 2');
+        $this->assertTrue($postC->order === 3, 'C 3');
+        $this->assertTrue($postD->order === 4, 'D 4');
+        $this->assertTrue($postE->order === 5, 'E 5');
+
+        dump(Collection::make([
+            "A" => $postA->order,
+            "B" => $postB->order,
+            "C" => $postC->order,
+            "D" => $postD->order,
+            "E" => $postE->order,
         ])->sort());
     }
 }
