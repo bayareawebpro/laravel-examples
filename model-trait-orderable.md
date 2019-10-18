@@ -42,7 +42,7 @@ class Post extends Model
 
 ```
 
-## Usage
+## Trait
 ```
 <?php namespace App\Traits;
 
