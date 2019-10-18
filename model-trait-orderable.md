@@ -245,7 +245,7 @@ class OrderableTest extends TestCase
         $this->assertTrue($postA->order === 1, 'A 1');
         $this->assertTrue($postB->order === 2, 'B 2');
         $this->assertTrue($postC->order === 3, 'C 3');
-        $this->assertTrue($postD->order === 4, 'D 3');
+        $this->assertTrue($postD->order === 4, 'D 4');
 
         //Increment Lowest Value
         $postA->incrementOrder();
