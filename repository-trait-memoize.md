@@ -3,6 +3,7 @@
 - Sometimes you may need a set of results multiple times throughout the request cycle. (Categories, Tags, etc...)
 - Sometimes you need to cache what's already cached.
 - Uses a simple string key instead of serializing arguments, KISS.
+- Note: Will not work will models, don't even try.
 
 ```
 <?php
