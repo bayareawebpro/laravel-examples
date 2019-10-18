@@ -11,6 +11,37 @@ $table->bigInteger('order')->default(0);
 $table->string('group')->default(null); //Any type
 ```
 
+## Model
+
+```
+<?php namespace App;
+
+use App\Traits\Orderable;
+use Illuminate\Database\Eloquent\Model;
+
+class Post extends Model
+{
+    use Orderable;
+
+    protected $orderGroup = 'group';
+
+    protected $attributes = [
+        'group'=> 'my-group'
+    ];
+
+    protected $fillable = [
+        'order',
+        'group',
+    ];
+
+    // Required for UnitTesting with SqlLite
+    protected $casts = [
+        'order'=> 'int'
+    ];
+}
+
+```
+
 ## Usage
 ```
 <?php namespace App\Traits;
