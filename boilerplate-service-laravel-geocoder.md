@@ -7,9 +7,13 @@ $result = GeocodeApi::make()->getCountryCode($fallback = 'US');
 $result = app(GeocodeApi::class)->getCountryCode($fallback = 'US');
 ```
 
-## Dependency
+## Dependencies
+- toin0u/geocoder-laravel
+- php-http/guzzle6-adapter
+- guzzlehttp/guzzle
+- geocoder-php/geoip2-provider
 - https://github.com/bayareawebpro/laravel-examples/blob/master/collections-recursive.md
-
+        
 ## Service
 ```
 <?php declare(strict_types=1);
