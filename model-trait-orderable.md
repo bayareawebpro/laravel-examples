@@ -87,12 +87,14 @@ trait Orderable
     /**
      * Set Active Order Group
      * @param string|int $orderGroup
+     * @return self
      */
-    public function setOrderGroup($orderGroup = null): void
+    public function setOrderGroup($orderGroup = null): self
     {
         if(isset($orderGroup)){
             $this->orderGroup = $orderGroup;
         }
+        return $this;
     }
 
     /**
