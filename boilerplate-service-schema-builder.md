@@ -1,5 +1,51 @@
+## Schema Builder
+- Designed for any type of schema.
+- Example usage with Schema.org for SEO.
+
+## Register Global Schema Collection.
 ```
-$schema = SchemaBuilder::make(config('my.schema.org.config'));
+use App\Schema\SchemaBuilder;
+
+$this->app->singleton('schemaOrg', function(){
+    return new Collection([
+        SchemaBuilder::make(config('seo.schema.website'))
+    ]);
+});
+```
+
+### Push Schema to Collection
+```
+use App\Schema\SchemaBuilder;
+
+$schema = SchemaBuilder::make(config('seo.schema.article'), [
+    'title' => 'My Article'
+]);
+
+app('schemaOrg')->push($schema);
+```
+
+## Render Helper
+```
+/**
+ * Embed Schema
+ * @return string
+ * @usage {!! schemaOrg() !!}
+ */
+function schemaOrg()
+{
+    try{
+        return app('schemaOrg')->map(function (\App\Schema\SchemaBuilder $schema) {
+            return $schema->toHtml();
+        })->implode("\n");
+    }catch (\Exception $e){
+        logger()->critical($e->getMessage(), $e->getTrace());
+    }
+}
+```
+
+## Schema Builder Usage
+```
+$schema = SchemaBuilder::make(config('my.schema.org.config'), $mergeAttributes = []);
 $schema->setAttribute('nested.key', 'Other Name');
 $schema->hasAttribute('nested.key');
 $schema->removeAttribute('parentKey');
@@ -9,6 +55,7 @@ $schema->toHtml();
 $schema->render();
 ```
 
+## Schema Builder Class
 ```
 <?php
 declare(strict_types=1);
