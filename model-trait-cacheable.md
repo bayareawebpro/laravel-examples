@@ -13,6 +13,16 @@ public function getReactionCountAttribute()
         );
     });
 }
+
+/**
+ * Clear the cached attributes.
+ * @return void
+ */
+public function clearCache(): void
+{
+    Cache::forget($this->cacheKey('reactionCount'));
+}
+
 ```
 
 ## Cacheable Trait
