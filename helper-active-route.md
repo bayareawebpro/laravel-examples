@@ -1,7 +1,7 @@
-## Usage
+## Dual Usage
 
 ```
-<a class="{{ isActive('resources.*', 'nav-link-active', 'nav-link') }}">
+<a class="{{ isActive('/home', 'nav-link-active', 'nav-link') }}">
     <!-- // -->
 </a>
 ```
@@ -12,18 +12,22 @@
 @endif
 ```
 
+```
+{{ isActiveUrl(['/', 'home']) }}
+```
+
 ## Helper Function
 ```
 /**
  * Is Active Url?
- * @param string $slug
- * @param string $class
- * @param string $fallback
- * @return mixed
+ * @param string|array $patterns
+ * @param string $returnValue
+ * @param string $fallbackValue
+ * @return boolean
  */
-function isActiveUrl($slug, $class = 'active', $fallback = null)
+function isActiveUrl($patterns, $returnValue = 'active', $fallbackValue = null)
 {
-    $isActive = request()->is($slug);
+    $isActive = (request()->is($patterns) || request()->routeIs($patterns));
     return $isActive ? $class : $fallback;
 }
 ```
