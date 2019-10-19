@@ -93,13 +93,13 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 Route::get('/event-source/demo', function () {
 
     return EventSource::make('deployment', 10000, function(EventSource $event, StreamedResponse $response){
-        $event->event('status', array(
+        $event->send('status', array(
             'message' => "Starting Deployment",
             'error'   => false,
         ));
         sleep(1); //Fake Process
 
-        $event->event('status', array(
+        $event->send('status', array(
             'message' => "Compiling Assets",
             'error'   => false,
         ));
@@ -107,26 +107,26 @@ Route::get('/event-source/demo', function () {
 
         $index = 1;
         while($index < 7){
-            $event->event('status', array(
+            $event->send('status', array(
                 'message' => "Installing Package $index...",
             ));
             sleep(1);
-            $event->event('status', array(
+            $event->send('status', array(
                 'message' => "Package $index Installed!",
             ));
             $index++;
         }
         sleep(1); //Fake Process
-        $event->event('status', array(
+        $event->send('status', array(
             'message' => "Error Encountered...",
             'error'   => true,
         ));
-        $event->event('status', array(
+        $event->send('status', array(
             'message' => "Package XXX failed to be installed...",
             'error'   => true,
         ));
         sleep(2); //Fake Process
-        $event->event('status', array(
+        $event->send('status', array(
             'message' => "Deployment Failed!",
             'error'   => true,
         ));
@@ -151,14 +151,14 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class EventSource implements Responsable
 {
 
-    private $id;
-    private $timeout;
-    private $response;
+    protected $id;
+    protected $timeout;
+    protected $response;
 
-    public function __construct(string $id, int $timeout, \Closure $closure)
+    public function __construct(string $id, int $retryTimeout, \Closure $closure)
     {
         $this->id = $id;
-        $this->timeout = $timeout;
+        $this->timeout = $retryTimeout;
         $this->response = new StreamedResponse(function () use ($closure){
             $this->start();
             $closure($this, $this->response);
@@ -169,9 +169,9 @@ class EventSource implements Responsable
         $this->response->headers->set('Cach-Control', 'no-cache');
     }
 
-    public static function make(string $id, int $timeout, \Closure $closure)
+    public static function make(string $id, int $retryTimeout, \Closure $closure)
     {
-        return new self($id, $timeout, $closure);
+        return new self($id, $retryTimeout, $closure);
     }
 
     public function start(): void
@@ -182,7 +182,7 @@ class EventSource implements Responsable
         $this->flush();
     }
 
-    public function event(string $name, array $data = array()): void
+    public function send(string $name, array $data = array()): void
     {
         echo "event: $name" . PHP_EOL;
         echo "data: " . $this->encode($data) . PHP_EOL;
