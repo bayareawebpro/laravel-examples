@@ -54,9 +54,9 @@ trait Orderable
 {
     //protected $orderGroup = null;
 
-    public function incrementOrder(): void
+    public function incrementOrder(): bool
     {
-        if ($this->getAttribute('isHighestOrder')) return;
+        if ($this->getAttribute('isHighestOrder')) return false;
         DB::transaction(function () {
             static::newQuery()
                 ->scopes(['orderGroup'])
@@ -66,11 +66,12 @@ trait Orderable
             $this->increment('order');
             $this->save();
         });
+        return true;
     }
 
-    public function decrementOrder(): void
+    public function decrementOrder(): bool
     {
-        if ($this->getAttribute('isLowestOrder')) return;
+        if ($this->getAttribute('isLowestOrder')) return false;
         DB::transaction(function () {
             static::newQuery()
                 ->scopes(['orderGroup'])
@@ -80,9 +81,10 @@ trait Orderable
             $this->decrement('order');
             $this->save();
         });
+        return true;
     }
 
-    public function updateOrderGroup(?string $orderGroup = null): self
+    public function updateOrderGroup(?string $orderGroup = null): bool
     {
         if(isset($orderGroup)){
             DB::transaction(function () use ($orderGroup){
@@ -93,10 +95,11 @@ trait Orderable
                 $this->setAttribute('order', null);
                 $this->save();
             });
+            return true;
         }
-        return $this;
+        return false;
     }
-
+    
     public function scopeOrderGroup(Builder $builder, ?string $orderGroup = null): void
     {
         $orderGroup = $orderGroup ?? $this->orderGroup;
@@ -112,7 +115,7 @@ trait Orderable
             ->where('order', '>', $order ?? $this->getAttribute('order'))
             ->orderBy('order', 'ASC');
     }
-
+    
     public function scopeLowerThan(Builder $builder, ?int $order = null): void
     {
         $builder
@@ -140,7 +143,7 @@ trait Orderable
     {
         return (bool)($this->getAttribute('highestOrder') === $this->getAttribute('order'));
     }
-
+    
     public static function bootOrderable()
     {
         static::saving(function (Model $model) {
