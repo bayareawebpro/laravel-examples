@@ -1,4 +1,4 @@
-# Orderable Trait (WIP, more unit tests coming)
+# Orderable Trait
 
 > Contributor: https://github.com/codemonkey76
 
@@ -161,7 +161,6 @@ trait Orderable
 namespace Tests\Unit;
 
 use App\Post;
-use Illuminate\Support\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -169,32 +168,24 @@ class OrderableTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * A basic test example.
-     * @return void
-     */
-    public function testBasicTest()
-    {
-        Post::query()->delete();
+    public function test_orders_self_when_created(){
         /**
          * @var $postA Post
          * @var $postB Post
          * @var $postC Post
          * @var $postD Post
+         * @var $postE Post
          */
-        $postA = tap(Post::create(['group' => 'base']))->save();
-        $postB = tap(Post::create(['group' => 'base']))->save();
-        $postC = tap(Post::create(['group' => 'base']))->save();
-        $postD = tap(Post::create(['group' => 'base']))->save();
-        $postE = tap(Post::create(['group' => 'alternate']))->save();
-
+        $postA = Post::create(['group' => 'base']);
+        $postB = Post::create(['group' => 'base']);
+        $postC = Post::create(['group' => 'base']);
+        $postD = Post::create(['group' => 'base']);
+        $postE = Post::create(['group' => 'alternate']);
         $postA->refresh();
         $postB->refresh();
         $postC->refresh();
         $postD->refresh();
         $postE->refresh();
-
-
         $this->assertTrue($postA->lowestOrder === 1, 'A => 1 lowestOrder');
         $this->assertTrue($postA->highestOrder === 4, 'A => 4  highestOrder');
         $this->assertTrue($postA->order === 1, 'A 1');
@@ -203,118 +194,108 @@ class OrderableTest extends TestCase
         $this->assertTrue($postD->order === 4, 'C 3');
         $this->assertTrue($postA->isLowestOrder, 'A self lowest');
         $this->assertTrue($postD->isHighestOrder, 'D self highest');
-
         $this->assertTrue($postE->order === 1, 'E 1');
         $this->assertTrue($postE->group === 'alternate', 'E group');
         $this->assertTrue($postE->isLowestOrder, 'E self lowest');
         $this->assertTrue($postE->isHighestOrder, 'E self highest');
+    }
 
+    public function test_will_ignore_decrement_when_self_lowest(){
+        /**
+         * @var $postA Post
+         * @var $postB Post
+         */
+        $postA = Post::create(['group' => 'base', 'order' => 1]);
+        $postB = Post::create(['group' => 'base', 'order' => 2]);
 
-        $postE->updateOrderGroup('base');
-        $postA->refresh();
-        $postB->refresh();
-        $postC->refresh();
-        $postD->refresh();
-        $postE->refresh();
-
-
-        $this->assertTrue($postE->order === 5, 'E 5');
-        $this->assertTrue($postE->group === 'base', 'E group');
-        $this->assertFalse($postE->isLowestOrder, 'E self lowest');
-        $this->assertTrue($postE->isHighestOrder, 'E self highest');
-
-        //Ignore Decrement of Lowest
         $postA->decrementOrder();
         $postA->refresh();
-        $postB->refresh();
-        $postC->refresh();
-        $postD->refresh();
-        $postE->refresh();
         $this->assertTrue($postA->order === 1, 'A 1');
-        $this->assertTrue($postB->order === 2, 'B 2');
-        $this->assertTrue($postC->order === 3, 'C 3');
-        $this->assertTrue($postD->order === 4, 'D 4');
-        $this->assertTrue($postE->order === 5, 'E 5');
+    }
 
-        //Increment Lowest Value
+    public function test_will_ignore_increment_when_self_highest(){
+        /**
+         * @var $postA Post
+         */
+        Post::create(['group' => 'base', 'order' => 1]);
+        $postB = Post::create(['group' => 'base', 'order' => 2]);
+
+        $postB->incrementOrder();
+        $postB->refresh();
+        $this->assertTrue($postB->order === 2, 'A 1');
+    }
+
+    public function test_will_decrement_next_sibling_if_self_incremented(){
+        /**
+         * @var $postA Post
+         * @var $postB Post
+         * @var $postC Post
+         */
+        $postA = Post::create(['group' => 'base', 'order' => 1]);
+        $postB = Post::create(['group' => 'base', 'order' => 2]);
+        $postC = Post::create(['group' => 'base', 'order' => 3]);
+
         $postA->incrementOrder();
         $postA->refresh();
         $postB->refresh();
         $postC->refresh();
-        $postD->refresh();
         $this->assertTrue($postA->order === 2, 'A 2');
         $this->assertTrue($postB->order === 1, 'B 1');
         $this->assertTrue($postC->order === 3, 'C 3');
-        $this->assertTrue($postD->order === 4, 'D 4');
-        $this->assertTrue($postE->order === 5, 'E 5');
+    }
 
-        //Increment New Lowest Value
-        $postB->incrementOrder();
+    public function test_will_increment_previous_sibling_if_self_decremented(){
+        /**
+         * @var $postA Post
+         * @var $postB Post
+         * @var $postC Post
+         */
+        $postA = Post::create(['group' => 'base', 'order' => 1]);
+        $postB = Post::create(['group' => 'base', 'order' => 2]);
+        $postC = Post::create(['group' => 'base', 'order' => 3]);
+
+        $postB->decrementOrder();
         $postA->refresh();
         $postB->refresh();
         $postC->refresh();
-        $postD->refresh();
-        $postE->refresh();
-        $this->assertTrue($postA->order === 1, 'A 1');
-        $this->assertTrue($postB->order === 2, 'B 2');
+        $this->assertTrue($postA->order === 2, 'A 2');
+        $this->assertTrue($postB->order === 1, 'B 1');
         $this->assertTrue($postC->order === 3, 'C 3');
-        $this->assertTrue($postD->order === 4, 'D 4');
-        $this->assertTrue($postE->order === 5, 'E 5');
+    }
 
-        //Increment 2nd Highest Value
-        $postC->incrementOrder();
-        $postA->refresh();
-        $postB->refresh();
-        $postC->refresh();
+    public function test_will_decrement_siblings_and_reorder_self_if_group_changed(){
+        /**
+         * @var $postD Post
+         * @var $postE Post
+         * @var $postF Post
+         */
+        Post::create(['group' => 'base', 'order' => 1]);
+        Post::create(['group' => 'base', 'order' => 2]);
+        Post::create(['group' => 'base', 'order' => 3]);
+        $postD = Post::create(['group' => 'alternate', 'order' => 1]);
+        $postE = Post::create(['group' => 'alternate', 'order' => 2]);
+        $postF = Post::create(['group' => 'alternate', 'order' => 3]);
+
+        $postE->updateOrderGroup('base');
         $postD->refresh();
         $postE->refresh();
-        $this->assertTrue($postA->order === 1, 'A 1');
-        $this->assertTrue($postB->order === 2, 'B 2');
-        $this->assertTrue($postC->order === 4, 'C 4');
-        $this->assertTrue($postD->order === 3, 'D 3');
-        $this->assertTrue($postE->order === 5, 'E 5');
+        $postF->refresh();
+        $this->assertTrue($postE->order === 4, 'E 4');
+        $this->assertTrue($postE->group === 'base', 'E group');
+        $this->assertTrue($postE->isHighestOrder, 'E self highest');
+        $this->assertFalse($postE->isLowestOrder, 'E self lowest');
+        $this->assertTrue($postD->order === 1, 'D 1');
+        $this->assertTrue($postF->order === 2, 'F 3');
 
-        //Increment 2nd Highest Value
-        $postD->incrementOrder();
-        $postA->refresh();
-        $postB->refresh();
-        $postC->refresh();
+        $postD->updateOrderGroup('base');
         $postD->refresh();
         $postE->refresh();
-        $this->assertTrue($postA->order === 1, 'A 1');
-        $this->assertTrue($postB->order === 2, 'B 2');
-        $this->assertTrue($postC->order === 3, 'C 3');
-        $this->assertTrue($postD->order === 4, 'D 4');
-        $this->assertTrue($postE->order === 5, 'E 5');
-
-
-        dump(Collection::make([
-            "A" => $postA->order,
-            "B" => $postB->order,
-            "C" => $postC->order,
-            "D" => $postD->order,
-            "E" => $postE->order,
-        ])->sort());
-        //Ignore Increment of Highest
-        $postE->incrementOrder();
-        $postA->refresh();
-        $postB->refresh();
-        $postC->refresh();
-        $postD->refresh();
-        $postE->refresh();
-        $this->assertTrue($postA->order === 1, 'A 1');
-        $this->assertTrue($postB->order === 2, 'B 2');
-        $this->assertTrue($postC->order === 3, 'C 3');
-        $this->assertTrue($postD->order === 4, 'D 4');
-        $this->assertTrue($postE->order === 5, 'E 5');
-
-        dump(Collection::make([
-            "A" => $postA->order,
-            "B" => $postB->order,
-            "C" => $postC->order,
-            "D" => $postD->order,
-            "E" => $postE->order,
-        ])->sort());
+        $postF->refresh();
+        $this->assertTrue($postD->order === 5, 'D 5');
+        $this->assertTrue($postD->group === 'base', 'D group');
+        $this->assertTrue($postD->isHighestOrder, 'D self highest');
+        $this->assertFalse($postD->isLowestOrder, 'D self lowest');
+        $this->assertTrue($postF->order === 1, 'F 3');
     }
 }
 ```
