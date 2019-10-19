@@ -21,7 +21,7 @@ $morphMap = Collection::make(get_declared_classes())
        $mapName = Str::snake(Str::plural(class_basename($class)));
        return [$mapName => $class];
    })
-   ->values();
+   ->toArray();
 
 Relation::morphMap($morphMap);
 
