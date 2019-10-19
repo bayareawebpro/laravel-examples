@@ -57,49 +57,47 @@ trait Orderable
     public function incrementOrder(): bool
     {
         if ($this->getAttribute('isHighestOrder')) return false;
-        DB::transaction(function () {
-            static::newQuery()
-                ->scopes(['orderGroup'])
-                ->where('order', $this->getAttribute('order') + 1)
-                ->whereKeyNot($this->getKey())
-                ->decrement('order');
-            $this->increment('order');
-            $this->save();
-        });
+        DB::beginTransaction();
+        static::newQuery()
+            ->scopes(['orderGroup'])
+            ->where('order', $this->getAttribute('nextOrder'))
+            ->decrement('order');
+        $this->increment('order');
+        $this->save();
+        DB::commit();
         return true;
     }
 
     public function decrementOrder(): bool
     {
         if ($this->getAttribute('isLowestOrder')) return false;
-        DB::transaction(function () {
-            static::newQuery()
-                ->scopes(['orderGroup'])
-                ->where('order', $this->getAttribute('order') - 1)
-                ->whereKeyNot($this->getKey())
-                ->increment('order');
-            $this->decrement('order');
-            $this->save();
-        });
+        DB::beginTransaction();
+        static::newQuery()
+            ->scopes(['orderGroup'])
+            ->where('order', $this->getAttribute('previousOrder'))
+            ->increment('order');
+        $this->decrement('order');
+        $this->save();
+        DB::commit();
         return true;
     }
 
     public function updateOrderGroup(?string $orderGroup = null): bool
     {
-        if(isset($orderGroup)){
-            DB::transaction(function () use ($orderGroup){
-                static::newQuery()
-                    ->scopes(['orderGroup', 'higherThan'])
-                    ->decrement('order');
-                $this->setAttribute($this->orderGroup, $orderGroup);
-                $this->setAttribute('order', null);
-                $this->save();
-            });
+        if (isset($orderGroup)) {
+            DB::beginTransaction();
+            static::newQuery()
+                ->scopes(['orderGroup', 'higherThan'])
+                ->decrement('order');
+            $this->setAttribute($this->orderGroup, $orderGroup);
+            $this->setAttribute('order', null);
+            $this->save();
+            DB::commit();
             return true;
         }
         return false;
     }
-    
+
     public function scopeOrderGroup(Builder $builder, ?string $orderGroup = null): void
     {
         $orderGroup = $orderGroup ?? $this->orderGroup;
@@ -115,23 +113,13 @@ trait Orderable
             ->where('order', '>', $order ?? $this->getAttribute('order'))
             ->orderBy('order', 'ASC');
     }
-    
+
     public function scopeLowerThan(Builder $builder, ?int $order = null): void
     {
         $builder
             ->scopes(['orderGroup'])
-            ->where('order', '<',$order ?? $this->getAttribute('order'))
+            ->where('order', '<', $order ?? $this->getAttribute('order'))
             ->orderBy('order', 'DESC');
-    }
-
-    public function getHighestOrderAttribute(): int
-    {
-        return (int) static::newQuery()->scopes(['orderGroup'])->max('order');
-    }
-
-    public function getLowestOrderAttribute(): int
-    {
-        return (int) static::newQuery()->scopes(['orderGroup'])->min('order');
     }
 
     public function getIsLowestOrderAttribute(): bool
@@ -139,15 +127,35 @@ trait Orderable
         return (bool)($this->getAttribute('lowestOrder') === $this->getAttribute('order'));
     }
 
+    public function getLowestOrderAttribute(): int
+    {
+        return (int)static::newQuery()->scopes(['orderGroup'])->min('order');
+    }
+
+    public function getPreviousOrderAttribute(): int
+    {
+        return (int)($this->getAttribute('order') - 1);
+    }
+
     public function getIsHighestOrderAttribute(): bool
     {
         return (bool)($this->getAttribute('highestOrder') === $this->getAttribute('order'));
     }
-    
-    public static function bootOrderable()
+
+    public function getHighestOrderAttribute(): int
+    {
+        return (int)static::newQuery()->scopes(['orderGroup'])->max('order');
+    }
+
+    public function getNextOrderAttribute(): int
+    {
+        return (int)($this->getAttribute('order') + 1);
+    }
+
+    public static function bootOrderable(): void
     {
         static::saving(function (Model $model) {
-            if(empty($model->getAttribute('order'))){
+            if (empty($model->getAttribute('order'))) {
                 $model->setAttribute('order', $model->getAttribute('highestOrder') + 1);
             }
         });
