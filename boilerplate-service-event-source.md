@@ -42,7 +42,7 @@
             },
         },
         created() {
-            this.isSupported = !'EventSource' in window
+            this.isSupported = 'EventSource' in window
         }
     }
 </script>
