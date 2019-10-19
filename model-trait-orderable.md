@@ -100,9 +100,9 @@ trait Orderable
 
     public function scopeOrderGroup(Builder $builder, ?string $orderGroup = null): void
     {
-        $orderGroup = $orderGroup ?? $this->orderGroup;
+        $orderGroup = $orderGroup ?? $this->getAttribute($this->orderGroup);
         if (isset($orderGroup)) {
-            $builder->where($orderGroup, $this->getAttribute($orderGroup));
+            $builder->where($this->orderGroup, $orderGroup);
         }
     }
 
@@ -127,24 +127,24 @@ trait Orderable
         return (bool)($this->getAttribute('lowestOrder') === $this->getAttribute('order'));
     }
 
-    public function getLowestOrderAttribute(): int
-    {
-        return (int)static::newQuery()->scopes(['orderGroup'])->min('order');
-    }
-
-    public function getPreviousOrderAttribute(): int
-    {
-        return (int)($this->getAttribute('order') - 1);
-    }
-
     public function getIsHighestOrderAttribute(): bool
     {
         return (bool)($this->getAttribute('highestOrder') === $this->getAttribute('order'));
     }
 
+    public function getLowestOrderAttribute(): int
+    {
+        return (int)static::newQuery()->scopes(['orderGroup'])->min('order');
+    }
+
     public function getHighestOrderAttribute(): int
     {
         return (int)static::newQuery()->scopes(['orderGroup'])->max('order');
+    }
+
+    public function getPreviousOrderAttribute(): int
+    {
+        return (int)($this->getAttribute('order') - 1);
     }
 
     public function getNextOrderAttribute(): int
@@ -269,6 +269,25 @@ class OrderableTest extends TestCase
         $this->assertTrue($postA->order === 2, 'A 2');
         $this->assertTrue($postB->order === 1, 'B 1');
         $this->assertTrue($postC->order === 3, 'C 3');
+    }
+
+    public function test_will_scope_order_group(){
+        /**
+         * @var $post Post
+         */
+        Post::query()->delete();
+        Post::create(['group' => 'base', 'order' => 1]);
+        Post::create(['group' => 'base', 'order' => 2]);
+        Post::create(['group' => 'base', 'order' => 3]);
+        Post::create(['group' => 'alternate', 'order' => 1]);
+        Post::create(['group' => 'alternate', 'order' => 2]);
+        Post::create(['group' => 'alternate', 'order' => 3]);
+        $post = Post::create(['group' => 'alternate', 'order' => 4]);
+
+        $this->assertSame(7, Post::query()->count(), '7 total in static unscoped query');
+        $this->assertSame(4, $post->orderGroup()->count(), '4 total in instance query');
+        $this->assertSame(4, Post::query()->orderGroup('alternate')->count(), '4 in static query with param');
+        $this->assertSame(3, Post::query()->orderGroup()->count(), '3 in static default query');
     }
 
     public function test_will_decrement_siblings_and_reorder_self_if_group_changed(){
