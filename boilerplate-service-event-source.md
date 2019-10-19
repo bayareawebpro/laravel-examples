@@ -89,20 +89,17 @@
 
 ```php
 <?php
-use App\Services\EventSource;
-use Illuminate\Support\Facades\Route;
-
+use Symfony\Component\HttpFoundation\StreamedResponse;
 Route::get('/event-source/demo', function () {
 
-    return response()->stream(function () {
-        EventSource::start('deployment', $timeout = 10000);
-        EventSource::event('status', array(
+    return EventSource::make('deployment', 10000, function(EventSource $event, StreamedResponse $response){
+        $event->event('status', array(
             'message' => "Starting Deployment",
             'error'   => false,
         ));
         sleep(1); //Fake Process
 
-        EventSource::event('status', array(
+        $event->event('status', array(
             'message' => "Compiling Assets",
             'error'   => false,
         ));
@@ -110,35 +107,30 @@ Route::get('/event-source/demo', function () {
 
         $index = 1;
         while($index < 7){
-            EventSource::event('status', array(
+            $event->event('status', array(
                 'message' => "Installing Package $index...",
             ));
             sleep(1);
-            EventSource::event('status', array(
+            $event->event('status', array(
                 'message' => "Package $index Installed!",
             ));
             $index++;
         }
         sleep(1); //Fake Process
-        EventSource::event('status', array(
+        $event->event('status', array(
             'message' => "Error Encountered...",
             'error'   => true,
         ));
-        EventSource::event('status', array(
+        $event->event('status', array(
             'message' => "Package XXX failed to be installed...",
             'error'   => true,
         ));
         sleep(2); //Fake Process
-        EventSource::event('status', array(
+        $event->event('status', array(
             'message' => "Deployment Failed!",
             'error'   => true,
         ));
-        EventSource::close();
-    }, 200, [
-        'Content-Type'      => 'text/event-stream',
-        'Cache-Control'     => 'no-cache',
-        'X-Accel-Buffering' => 'no',
-    ]);
+    });
 });
 ```
 
@@ -148,47 +140,79 @@ Route::get('/event-source/demo', function () {
 
 namespace App\Services;
 
+use Illuminate\Contracts\Support\Responsable;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
 /**
  * Event Source Stream
  * @source https://www.html5rocks.com/en/tutorials/eventsource/basics/
+ * @source https://dev.to/mesadhan/event-stream-server-send-events-5afk
  */
-class EventSource{
+class EventSource implements Responsable
+{
 
-    public static function start($id = null, $timeout = 10000): void
+    private $id;
+    private $timeout;
+    private $response;
+
+    public function __construct(string $id, int $timeout, \Closure $closure)
     {
-        echo "retry: $timeout".PHP_EOL;
-        if(!is_null($id)){
-            echo "id: $id".PHP_EOL;
-        }
-        self::flush();
+        $this->id = $id;
+        $this->timeout = $timeout;
+        $this->response = new StreamedResponse(function () use ($closure){
+            $this->start();
+            $closure($this, $this->response);
+            $this->close();
+        });
+        $this->response->headers->set('Content-Type', 'text/event-stream');
+        $this->response->headers->set('X-Accel-Buffering', 'no');
+        $this->response->headers->set('Cach-Control', 'no-cache');
     }
 
-    public static function event($name, array $data = array()): void
+    public static function make(string $id, int $timeout, \Closure $closure)
     {
-        echo "event: $name".PHP_EOL;
-        echo "data: ".self::encode($data).PHP_EOL;
-        self::flush();
+        return new self($id, $timeout, $closure);
     }
 
-    public static function close(): void
+    public function start(): void
     {
-        echo "id: close\n".PHP_EOL;
-        echo "data: \n\n\n".PHP_EOL;
-        self::flush();
+        ini_set('max_execution_time', "{$this->timeout}");
+        echo "retry: {$this->timeout}" . PHP_EOL;
+        echo "id: {$this->id}" . PHP_EOL;
+        $this->flush();
     }
 
-    protected static function encode(array $data): string
+    public function event(string $name, array $data = array()): void
     {
-        return (string) json_encode($data);
+        echo "event: $name" . PHP_EOL;
+        echo "data: " . $this->encode($data) . PHP_EOL;
+        $this->flush();
     }
 
-    public static function flush(): void
+    public function close(): void
+    {
+        echo "id: close\n" . PHP_EOL;
+        echo "data: \n\n\n" . PHP_EOL;
+        $this->flush();
+    }
+
+    protected function encode(array $data): string
+    {
+        return (string)json_encode($data);
+    }
+
+    protected function flush(): void
     {
         echo PHP_EOL;
-        if(ob_get_level() > 0){
+        if (ob_get_level() > 0) {
             ob_flush();
             flush();
         }
+    }
+
+    public function toResponse($request): StreamedResponse
+    {
+        return $this->response;
     }
 }
 ```
