@@ -91,20 +91,22 @@
 <?php
 use App\Services\EventSource;
 use Illuminate\Support\Facades\Route;
+
 Route::get('/event-source/demo', function () {
-    $response = response()->stream(function () {
+
+    return response()->stream(function () {
         EventSource::start('deployment', $timeout = 10000);
         EventSource::event('status', array(
             'message' => "Starting Deployment",
             'error'   => false,
         ));
-        sleep(1); //Fake Loading
+        sleep(1); //Fake Process
 
         EventSource::event('status', array(
             'message' => "Compiling Assets",
             'error'   => false,
         ));
-        sleep(1); //Fake Loading
+        sleep(1); //Fake Process
 
         $index = 1;
         while($index < 7){
@@ -117,7 +119,7 @@ Route::get('/event-source/demo', function () {
             ));
             $index++;
         }
-        sleep(1); //Fake Loading
+        sleep(1); //Fake Process
         EventSource::event('status', array(
             'message' => "Error Encountered...",
             'error'   => true,
@@ -126,7 +128,7 @@ Route::get('/event-source/demo', function () {
             'message' => "Package XXX failed to be installed...",
             'error'   => true,
         ));
-        sleep(2); //Fake Loading
+        sleep(2); //Fake Process
         EventSource::event('status', array(
             'message' => "Deployment Failed!",
             'error'   => true,
@@ -137,10 +139,6 @@ Route::get('/event-source/demo', function () {
         'Cache-Control'     => 'no-cache',
         'X-Accel-Buffering' => 'no',
     ]);
-    $response->headers->set('Content-Type', 'text/event-stream');
-    $response->headers->set('Cache-Control', 'no-cache');
-    $response->headers->set('X-Accel-Buffering', 'no');
-    return $response;
 });
 ```
 
