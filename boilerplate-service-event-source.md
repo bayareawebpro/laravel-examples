@@ -89,10 +89,9 @@
 
 ```php
 <?php
-use Symfony\Component\HttpFoundation\StreamedResponse;
 Route::get('/event-source/demo', function () {
 
-    return EventSource::make('deployment', 10000, function(EventSource $event, StreamedResponse $response){
+    return EventSource::make('deployment', 10000, function(EventSource $event){
         $event->send('status', array(
             'message' => "Starting Deployment",
             'error'   => false,
@@ -153,7 +152,7 @@ class EventSource implements Responsable
 
     protected $id;
     protected $timeout;
-    protected $response;
+    public $response;
 
     public function __construct(string $id, int $retryTimeout, \Closure $closure)
     {
@@ -161,7 +160,7 @@ class EventSource implements Responsable
         $this->timeout = $retryTimeout;
         $this->response = new StreamedResponse(function () use ($closure){
             $this->start();
-            $closure($this, $this->response);
+            $closure($this);
             $this->close();
         });
         $this->response->headers->set('Content-Type', 'text/event-stream');
