@@ -142,10 +142,9 @@ class EventSource implements Responsable
         name: 'EventSource',
         data() {
             return {
-                isSupported: false,
-                isLoading: false,
-                progress: 0,
                 output: [],
+                isLoading: false,
+                isSupported: false,
             }
         },
         methods: {
