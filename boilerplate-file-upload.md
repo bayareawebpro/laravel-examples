@@ -106,8 +106,8 @@ const headers = {
 ```
 
 ## Component
+ - `npm install vue`
  - `npm install dropzone`
- - `npm install axios`
  
 ```
 <script>
