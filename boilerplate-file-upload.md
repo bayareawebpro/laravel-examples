@@ -94,7 +94,21 @@ class MediaRequest extends FormRequest
 ```
 
 ## Component
+ - `npm install dropzone`
+ - `npm install axios`
+ 
+ 
+ ## Headers
+ ```
+//shortform
+headers: window.axios.defaults.headers.common, 
 
+//longform
+headers: { 
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-CSRF-TOKEN': document.getElementById('app').dataset.token,
+}
+```
 ```
 <script>
     require('dropzone/dist/dropzone.css')
@@ -113,15 +127,15 @@ class MediaRequest extends FormRequest
         created() {
             this.$nextTick(()=>{
                 this.$options.zone = new Dropzone(this.$refs.zone, {
+                    headers: window.axios.defaults.headers.common,
+                    acceptedFiles: 'image/*',
+                    autoProcessQueue: false,
+                    maxFilesize: 2, // MB
                     url: "/media/upload",
+                    paramName: "file",
                     params:{
                         id: 1
                     },
-                    paramName: "file",
-                    maxFilesize: 2, // MB
-                    autoProcessQueue: false,
-                    acceptedFiles: 'image/*',
-                    headers: window.axios.defaults.headers.common
                 });
                 this.$options.zone.on("addedfile", (file) =>{
                     console.log('addedfile', file)
