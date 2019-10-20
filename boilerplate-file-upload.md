@@ -92,23 +92,23 @@ class MediaRequest extends FormRequest
 }
 
 ```
+ 
+## Headers
+ ```
+//shortform
+const headers = window.axios.defaults.headers.common
+
+//longform
+const headers = { 
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-CSRF-TOKEN': document.getElementById('app').dataset.token,
+}
+```
 
 ## Component
  - `npm install dropzone`
  - `npm install axios`
  
- 
- ## Headers
- ```
-//shortform
-headers: window.axios.defaults.headers.common, 
-
-//longform
-headers: { 
-    'X-Requested-With': 'XMLHttpRequest',
-    'X-CSRF-TOKEN': document.getElementById('app').dataset.token,
-}
-```
 ```
 <script>
     require('dropzone/dist/dropzone.css')
