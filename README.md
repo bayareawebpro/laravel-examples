@@ -7,6 +7,7 @@ enhancing your Laravel Development experience.
 
 - Code should be concise and pertain to a single subject.
 - Submissions must be formatted as markdown documents.
+- Bonus Points for Unit Tests
 
 ---
 
