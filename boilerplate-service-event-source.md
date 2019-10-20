@@ -139,9 +139,9 @@ class EventSource implements Responsable
 ```vue
 <script>
     export default {
+        name: 'EventSource',
         data() {
             return {
-                eventSource: null,
                 isSupported: false,
                 isLoading: false,
                 progress: 0,
@@ -152,24 +152,23 @@ class EventSource implements Responsable
             run() {
                 this.output = []
                 this.isLoading = true
-                this.eventSource = new EventSource('/event-source/demo');
-                this.eventSource.addEventListener('status', event => {
-
-                    console.info(event)
-                    if (event.data) {
-                        this.output.push(JSON.parse(event.data))
-                        this.$nextTick(this.scrollTop)
-                    }
-                    if (event.lastEventId === 'close') {
-                        this.closeEventSource()
-                    }
-                }, false)
-                this.eventSource.addEventListener('error', this.closeEventSource, false)
+                this.$options.stream = new EventSource('/event-source');
+                this.$options.stream.addEventListener('error', this.close, false)
+                this.$options.stream.addEventListener('status', this.record, false)
             },
-            closeEventSource() {
-                this.eventSource.close()
-                this.eventSource = null
+            record(event){
+                if (event.data) {
+                    this.output.push(JSON.parse(event.data))
+                    this.$nextTick(this.scrollTop)
+                }
+                if (event.lastEventId === 'close') {
+                    this.close()
+                }
+            },
+            close() {
                 this.isLoading = false
+                this.$options.stream.close()
+                this.$options.stream = null
             },
             scrollTop() {
                 if (this.$refs.console) {
@@ -185,13 +184,11 @@ class EventSource implements Responsable
 <template>
     <div>
         <div v-if="isSupported">
-            <h1>Command Name</h1>
-            <hr>
             <button
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                type="button"
                 @click="run"
-                :disabled="isLoading">
+                type="button"
+                :disabled="isLoading"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 Run Command
             </button>
             <hr>
@@ -204,20 +201,17 @@ class EventSource implements Responsable
         </div>
     </div>
 </template>
-<style>
-    .console-output {
-        padding: 15px;
-        height: 600px;
-        max-height: 768px;
-        overflow-y: scroll;
-        background: black;
-        color: #00ebff;
-    }
-    .console-output pre{
-        padding: 5px 0;
-    }
-    .console-error {
-        color: red;
-    }
+<style lang="sass">
+    .console-output
+        padding: 15px
+        height: 600px
+        max-height: 768px
+        overflow-y: scroll
+        background: black
+        color: #00ebff
+        pre
+            padding: 5px 0
+            &.console-error
+                color: red
 </style>
 ```
