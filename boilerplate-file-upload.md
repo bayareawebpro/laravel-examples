@@ -204,7 +204,7 @@ const headers = {
                 if (this.previewTemplate) {
                     this.$options.zone.options.previewTemplate = this.previewTemplate
                 }
-                // If the file is a preview we need to add it to the file array.
+                // If the file is a mock we need to add it to the file array.
                 this.$options.zone.on("addedfile", (file) => {
                     console.log('addedfile', file, this.$options.zone.files)
                     if (this.$options.zone.files.indexOf(file) < 0) {
