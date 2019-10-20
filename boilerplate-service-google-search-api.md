@@ -214,17 +214,17 @@ class GoogleSearch{
      */
     protected function search(Collection $query)
     {
+        $results = [];
         $query->put('key', config('services.google.search.token'));
         $query->put('cx', config('services.google.search.engine'));
 
         try{
             $response = $this->client->request('GET', config('services.google.search.endpoint'), [
-                'query' => $query->toArray()
-            ]);
-            $results = json_decode((string) $response->getBody(), true);
+               'query' => $query->toArray()
+           ]);
+           $results = json_decode((string) $response->getBody(), true);
         }catch (GuzzleException $e){
             logger()->error($e->getMessage(), $e->getTrace());
-            throw new \Exception('Invalid Parameters');
         }
 
         return new Collection($results);
