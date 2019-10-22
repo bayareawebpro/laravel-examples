@@ -52,6 +52,7 @@ class LeadRequestTest extends TestCase
             ) = $this->getMockData();
 
         // Simulate lazy input with minimal values (washington, dc)
+        // Grab the data after it's merged but before it's validated and assert expectations.
         $merged = LeadRequest::create('/', 'get', [
             'form_step'        => 1,
             'form_type'        => "automobile",
