@@ -1,9 +1,11 @@
 # Unit Testing Form Requests
 
-This is an example of testing a FormRequest that does more then validate, 
-it merges input before it's validated to help users.  
+This is an example of testing a FormRequest that does more then validate, it merges input before 
+it's validated to help users.  This test insured what's merged is reasonably accurate.
 
-This test insured what's merged is reasonably accurate.
+The Form Request will also load different rules from classes which are preconfigured.  
+It's a multi-step form with multiple versions.  This is step which all version share.
+
 
 #### Expectations
 
