@@ -114,27 +114,6 @@ const headers = {
 <dropzone route="/upload"></dropzone>
 ```
 
-#### Custom Preview
- ```vue
-<dropzone route="/upload">
-    <!-- Custom Preview -->
-    <div class="dz-preview dz-file-preview">
-        <div class="dz-details">
-            <div class="dz-size" data-dz-size></div>
-            <div class="dz-filename">
-                <span data-dz-name></span>
-            </div>
-        </div>
-        <div class="dz-image">
-            <img data-dz-thumbnail/>
-        </div>
-        <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
-        <div class="dz-success-mark"><span>✔</span></div>
-        <div class="dz-error-mark"><span>✘</span></div>
-        <div class="dz-error-message"><span data-dz-errormessage></span></div>
-    </div>
-</dropzone>
-```
 
 #### Implementation
 ```vue
@@ -234,7 +213,7 @@ const headers = {
     }
 </script>
 <style lang="sass">
-    @import "~dropzone/dist/dropzone.css"
+   @import "~dropzone/dist/dropzone.css"
 </style>
 <template>
     <div>
@@ -265,4 +244,58 @@ const headers = {
         </div>
     </div>
 </template>
+```
+
+## Custom Preview Template
+
+#### Implementation
+ ```vue
+<dropzone route="/upload">
+    <!-- Custom Preview -->
+    <div class="dz-preview dz-file-preview">
+        <div class="dz-details">
+            <div class="dz-size" data-dz-size></div>
+            <div class="dz-filename">
+                <span data-dz-name></span>
+            </div>
+        </div>
+        <div class="dz-image">
+            <img data-dz-thumbnail/>
+        </div>
+        <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
+        <div class="dz-success-mark"><span>✔</span></div>
+        <div class="dz-error-mark"><span>✘</span></div>
+        <div class="dz-error-message"><span data-dz-errormessage></span></div>
+    </div>
+</dropzone>
+```
+
+#### Css Reset
+```
+<style lang="sass">
+@import "~dropzone/dist/dropzone.css"
+.dropzone-wrapper
+    height: 100%
+.dropzone
+    min-height: unset
+    height: 100%
+    border-style: dashed
+    border-radius: .25rem
+    padding: 0.25rem
+    .dz-message
+        margin: 0
+    .dz-preview
+        margin: 0
+        min-height: unset
+        .dz-details
+            font-size: 10px
+            .dz-size
+                font-size: 12px
+                margin-bottom: 0
+        .dz-image
+            border-radius: .25rem
+            width: unset
+            height: unset
+            object-fit: cover
+</style>
 ```
