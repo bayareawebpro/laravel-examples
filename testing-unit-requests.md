@@ -9,7 +9,7 @@ It's a multi-step form with multiple versions.  This is step one, which all vers
 
 #### Expectations
 
-- It will resolve rules from configured classes names.
+- It will resolve rules from configured class names.
 - It can guess a result by geo-coding the primary input.
 - It can auto-fill missing attributes from a local database (zip_codes).
 
