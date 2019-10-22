@@ -1,6 +1,6 @@
 # Unit Testing Form Requests
 
-This is an example of a FormRequest that does a few things.
+This is an example of testing a FormRequest that does a few things.
 
 #### Expectations
 
