@@ -4,7 +4,7 @@ This is an example of testing a FormRequest that does more then validate, it mer
 it's validated to help users.  This test insures what's merged is reasonably accurate.
 
 The Form Request will also load different rules from classes which are preconfigured.  
-It's a multi-step form with multiple versions.  This is step which all version share.
+It's a multi-step form with multiple versions.  This is step one, which all version share.
 
 
 #### Expectations
