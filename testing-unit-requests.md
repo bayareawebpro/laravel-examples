@@ -40,7 +40,7 @@ class LeadRequestTest extends TestCase
         }
     }
 
-    public function test_can_geocode_and_autofill_attributes_from_one_input()
+    public function test_it_can_autofill_attributes_from_minimal_input()
     {
         list(
             $pickupZipActual,
@@ -52,7 +52,7 @@ class LeadRequestTest extends TestCase
             ) = $this->getMockData();
 
         // Simulate lazy input with minimal values (washington, dc)
-        // Grab the data after it's merged but before it's validated and assert expectations.
+        // Grab the "data to be validated" and assert expectations.
         $merged = LeadRequest::create('/', 'get', [
             'form_step'        => 1,
             'form_type'        => "automobile",
@@ -115,8 +115,6 @@ class LeadRequestTest extends TestCase
         $dropoffCityActual  = data_get($dropoff, 'city');
         $dropoffStateActual = data_get($dropoff, 'state_code');
         return array(
-            $pickup,
-            $dropoff,
             $pickupZipActual,
             $pickupCityActual,
             $pickupStateActual,
