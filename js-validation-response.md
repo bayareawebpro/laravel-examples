@@ -1,7 +1,9 @@
 # Validation Error Bag Manager
 
+https://jsfiddle.net/bayareawebpro/8vuxne7j/20/
+
 ## Vue Usage
-```
+```ecmascript 6
 import Validator from './Validator'
 
 data: ()=>({
@@ -9,7 +11,7 @@ data: ()=>({
 }),
 
 axios.get('/my-route').then((response)=>{
-    ...
+    console.log(response)
 })
 .catch((error)=>{
     this.validator.sync(error.response)
@@ -31,7 +33,7 @@ this.validator.setErrors({
 ```
 
 ## Validator Class
-```
+```ecmascript 6
 export default class Validator{
     constructor(){
         this.message = null

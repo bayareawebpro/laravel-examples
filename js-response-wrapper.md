@@ -1,6 +1,6 @@
 # Wrapper with Laravel / Symfony Conditionals
 
-```
+```ecmascript 6
 import Response from './Response'
 
 axios.get('/my-route').then((response)=>{
@@ -13,7 +13,7 @@ axios.get('/my-route').then((response)=>{
 ```
 
 ## Response Class
-```
+```ecmascript 6
 export default class Response {
 
     constructor(response) {
