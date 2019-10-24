@@ -89,7 +89,7 @@ class Logger
      */
     public function __call($name, $arguments): self
     {
-        $this->forwardCallTo($this->logger, Str::upper($name), $arguments);
+        $this->forwardCallTo($this->logger, $name, $arguments);
         return $this;
     }
 
