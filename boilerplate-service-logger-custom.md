@@ -17,6 +17,7 @@ This can be a little confusing to read, but in plain english:
 - that accepts a string "message"
 - and an array "data"
 
+## Usage
 ```php
 <?php
 use App\Services\Logger;
@@ -24,9 +25,15 @@ use App\Services\Logger;
 Logger::make('pages-show')->error('Test', request()->all());
 ```
 
+Output
+
 ```
 [2019-10-24 07:44:17] pages-show.ERROR: Test {"keywords":"exciting","sort":"asc"}
 ```
+
+## Implementation
+
+This class uses a "lazy-singleton" so that only one instance of each log file is opened during a request.
 
 ```php
 <?php declare(strict_types=1);
@@ -65,6 +72,20 @@ class Logger
         $this->logger = $this->getMonologInstance($fileName);
     }
 
+    /**
+     * Close the log handlers.
+     */
+    public function __destruct()
+    {
+        $this->logger->close();
+    }
+
+    /**
+     * Forward calls to Monolog.
+     * @param $name
+     * @param $arguments
+     * @return $this
+     */
     public function __call($name, $arguments): self
     {
         $this->forwardCallTo($this->logger, Str::upper($name), $arguments);
