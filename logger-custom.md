@@ -5,46 +5,84 @@ Sometimes you might want to log something specifically, possibly for a customer 
 
 ```php
 <?php
-use App\Logs\Logger;
+use App\Services\Logger;
 
-Logger::make('auth-log')->write('info','User Logged In', request()->user()->getLoggerAttributes());
+Logger::make('pages-show')->error('Test', request()->all());
+```
+
+```
+[2019-10-24 07:44:17] pages-show.ERROR: Test {"keywords":"exciting","sort":"asc"}
 ```
 
 ```php
 <?php declare(strict_types=1);
 
-namespace App\Logs;
+namespace App\Services;
 
+use Illuminate\Support\Traits\ForwardsCalls;
 use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\FirePHPHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger as Monolog;
 use Illuminate\Support\Str;
 
-class Logger {
+/**
+ * @method static Logger debug(string $message, array $data = [])
+ * @method static Logger info(string $message, array $data = [])
+ * @method static Logger notice(string $message, array $data = [])
+ * @method static Logger warning(string $message, array $data = [])
+ * @method static Logger error(string $message, array $data = [])
+ * @method static Logger critical(string $message, array $data = [])
+ * @method static Logger alert(string $message, array $data = [])
+ * @method static Logger emergency(string $message, array $data = [])
+ */
+class Logger
+{
+    use ForwardsCalls;
+
+    /**
+     * @var Monolog
+     */
+    protected $logger;
 
     const FORMAT = "[%datetime%] %channel%.%level_name%: %message% %context%\n";
 
-    public function __construct(string $fileName) 
+    public function __construct(string $fileName)
     {
-        $handler = new StreamHandler(storage_path('/logs/'.Str::slug($fileName).'.log'), 100);
-        $handler->setFormatter(new LineFormatter(static::FORMAT));
-        $this->logger = tap(new Monolog($fileName))->pushHandler($handler);
+        $this->logger = $this->getMonologInstance($fileName);
     }
 
+    public function __call($name, $arguments): self
+    {
+        $this->forwardCallTo($this->logger, Str::upper($name), $arguments);
+        return $this;
+    }
+
+    /**
+     * Make Instance of Self
+     * @param string $fileName
+     * @return Logger
+     */
     public static function make(string $fileName): Logger
     {
         if(!app()->bound("logger.$fileName")){
             app()->singleton("logger.$fileName", function() use ($fileName){
-                return app(static::class, $fileName);
+                return app(static::class, compact('fileName'));
             });
         }
         return app("logger.$fileName");
     }
 
-	public function write(string $level, string $message, array $data = [])
+    /**
+     * Get Monolog Instance
+     * @param string $fileName
+     * @return Monolog
+     * @throws \Exception
+     */
+    protected function getMonologInstance(string $fileName): Monolog
     {
-        $this->logger->$level($message,$data);
-	}
+        $handler = new StreamHandler(storage_path('logs/' . Str::slug($fileName) . '.log'));
+        $handler->setFormatter(new LineFormatter(static::FORMAT));
+        return tap(new Monolog($fileName))->pushHandler($handler);
+    }
 }
 ```
