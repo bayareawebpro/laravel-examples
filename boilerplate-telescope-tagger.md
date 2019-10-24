@@ -25,7 +25,8 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      */
     public function register()
     {
-        Telescope::night();
+        //...
+
         Telescope::filterBatch(function (Collection $entries) {
             if ($this->app->environment('local')) {
                 return true;
@@ -36,37 +37,27 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                     $entry->hasMonitoredTag() ||
                     $entry->isScheduledTask() ||
                     $entry->isReportableException() ||
-                    LeadTagger::canTag($entry)
+                    LeadTagger::canTag($entry) // Evaluate Entry
                 );
             });
         });
+
         Telescope::tag(function (IncomingEntry $entry) {
+             // Evaluate Entry
             if (LeadTagger::canTag($entry)) {
+                // Provide Tags
                 return LeadTagger::getTags($entry);
             }
             return [];
         });
     }
-
     /**
      * Prevent sensitive request details from being logged by Telescope.
      * @return void
      */
     protected function hideSensitiveRequestDetails()
     {
-        if ($this->app->environment('local')) {
-            return;
-        }
-        Telescope::hideRequestParameters([
-            '_token',
-            'email',
-            'phone',
-        ]);
-        Telescope::hideRequestHeaders([
-            'cookie',
-            'x-csrf-token',
-            'x-xsrf-token',
-        ]);
+        //...
     }
 
     /**
@@ -76,9 +67,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      */
     protected function gate()
     {
-        Gate::define('viewTelescope', function ($user) {
-            return in_array($user->role, ['admin']);
-        });
+        //...
     }
 }
 
