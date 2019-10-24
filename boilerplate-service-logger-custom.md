@@ -2,21 +2,6 @@
 
 Sometimes you might want to log something specifically, possibly for a customer or client.
 
-Using the Forwards Calls Trait (found in laravel) will allow you to wrap another class, 
-
-We can declare the methods supported by using DocBlocks:
-
-```
-@method static Logger debug(string $message, array $data = [])
-```
-
-This can be a little confusing to read, but in plain english: 
-- exposes static method 
-- that returns instance of Logger 
-- named debug 
-- that accepts a string "message"
-- and an array "data"
-
 ## Usage
 ```php
 <?php
@@ -34,6 +19,22 @@ Output
 ## Implementation
 
 This class uses a "lazy-singleton" so that only one instance of each log file is opened during a request.
+
+Using the Forwards Calls Trait (found in laravel) allow us to wrap another class, 
+We can declare the methods supported by using DocBlocks:
+
+```
+@method static Logger debug(string $message, array $data = [])
+```
+
+This can be a little confusing to read, but in plain english: 
+- exposes static method 
+- that returns instance of Logger 
+- named debug 
+- that accepts a string "message"
+- and an array "data"
+
+This same method of declaration is used by facades.
 
 ```php
 <?php declare(strict_types=1);
