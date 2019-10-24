@@ -1,7 +1,21 @@
-
 # Custom Logger Instance
 
 Sometimes you might want to log something specifically, possibly for a customer or client.
+
+Using the Forwards Calls Trait (found in laravel) will allow you to wrap another class, 
+
+We can declare the methods supported by using DocBlocks:
+
+```
+@method static Logger debug(string $message, array $data = [])
+```
+
+This can be a little confusing to read, but in plain english: 
+- exposes static method 
+- that returns instance of Logger 
+- named debug 
+- that accepts a string "message"
+- and an array "data"
 
 ```php
 <?php
