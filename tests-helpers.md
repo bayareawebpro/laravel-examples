@@ -46,7 +46,7 @@ public function withRoutes(\Closure $callback)
 ```
 
 Add within test methods easily.
-```
+```php
 $this->withRoutes(function(\Illuminate\Routing\Router $router){
     $router->get('/test-route/', function(){
         return response('ok');
@@ -79,5 +79,42 @@ public function ajaxHeaders(): array
         'Accept'           => "application/json",
         'X-CSRF-TOKEN'     => csrf_token(),
     ];
+}
+```
+
+#### Bypass Assertions if config not set.
+Usage: 
+```php
+if($this->doesntAssertIfEnvNotConfigured()) return;
+$this->assertTrue(false);
+```
+
+Environment Config:
+```php
+<?php
+return [
+    'shouldAssert'=>'0.0.0.0:32776'
+];
+```
+Helper: 
+```php
+protected function doesntAssertIfEnvNotConfigured($configKey = null)
+{
+    if(!config()->has($configKey ?? 'ssh.host')){
+        $this->expectNotToPerformAssertions();
+    }
+}
+```
+
+#### Environment Setup
+```php
+protected function getEnvironmentSetUp($app)
+{
+    $env = __DIR__.'/../.env.php';
+    if(file_exists($env)){
+        $app['config']->set('ssh', require __DIR__.'/../.env.php');
+    }else{
+        $app['config']->set('ssh', []);
+    }
 }
 ```
