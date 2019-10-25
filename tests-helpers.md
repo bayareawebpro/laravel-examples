@@ -102,6 +102,7 @@ protected function doesntAssertIfEnvNotConfigured($configKey = null)
 {
     if(!config()->has($configKey ?? 'ssh.host')){
         $this->expectNotToPerformAssertions();
+        return true;
     }
 }
 ```
