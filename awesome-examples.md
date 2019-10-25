@@ -1,8 +1,7 @@
-# More Awesome Examples
+# More Examples
 
-### Use Laravel Components Standalone
 - https://github.com/mattstauffer/Torch
+- https://github.com/chiraggude/awesome-laravel
 
-### Helpers
-
+# More Helpers
 - https://github.com/calebporzio
