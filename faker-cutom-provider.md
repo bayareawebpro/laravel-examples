@@ -1,4 +1,4 @@
-## Define a Customer Faker Factory
+## Define a Custom Faker Factory
 
 - Useful for custom data types.
 
