@@ -2,13 +2,13 @@
 
 ```
 /**
- * Favorite the Resource
- * @param FavoriteRequest $request
+ * Rate the Resource
+ * @param RatingRequest $request
  * @param Model $model
  * @return \Illuminate\Http\Response
  * @throws \Throwable
  */
-public function favor(FavoriteRequest $request, Model $model)
+public function rate(RatingRequest $request, Model $model)
 {
     $model->rate($request->user(), $request->validationData());
     $model->isRated;
