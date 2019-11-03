@@ -4,7 +4,9 @@ The Symphony Process Component is included with Laravel, here's an example of ex
 
 ```
 
-$process = new Process("ssh -C forge@hostname \"mysqldump staging\" | /Applications/MAMP/Library/bin/mysql staging");
+$process = Process::fromShellCommandline(
+    "ssh -C forge@hostname \"mysqldump staging\" | /Applications/MAMP/Library/bin/mysql staging"
+);
 $process->setTimeout(60*10);
 $process->setTty(Process::isTtySupported());
 $process->setEnv(array(
