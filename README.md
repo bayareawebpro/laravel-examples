@@ -12,8 +12,4 @@ enhancing your Laravel Development experience.
 ---
 
 #### ❤️ Love it?  Support my efforts by using Digital Ocean
-
-- Spent $25, and I'm awarded $25.
-- Collect $50 in free credit!
-
 - https://m.do.co/c/56416e122171
