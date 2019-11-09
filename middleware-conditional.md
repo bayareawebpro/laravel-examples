@@ -3,8 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Routing\Router;
-use Illuminate\Support\Str;
 
 class ConditionalMiddlware
 {
