@@ -5,6 +5,8 @@
 - No Tokens Stored in Database.
 - No OAuth Needed.
 
+> Credits: @CodeMonkey
+
 ```shell script
 composer require laravel/passport
 artisan passport:install
