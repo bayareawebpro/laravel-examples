@@ -1,8 +1,9 @@
 ### Installation
 
-- No OAuth Needed.
+- Automatic Token Auth, after Log-In via Web Auth.
+- No Tokens Stored in LocalStorage.
 - No Tokens Stored in Database.
-- Automatic 
+- No OAuth Needed.
 
 ```shell script
 composer require laravel/passport
@@ -53,8 +54,8 @@ Route::group([
 });
 ```
 
-### RedirectIfAuthenticated Middleware
-We'll return our user instead of a redirect.
+### Update RedirectIfAuthenticated Middleware
+We'll return our user for json requests.
 
 ```php
 <?php
@@ -70,7 +71,7 @@ if (Auth::guard($guard)->check()) {
 ### Add CreateFreshApiToken Middleware
 This is where the magic happens, everytime we visit a web route, we get a new token when authorized. So, 
 once we login, we're ready to use authenticated API routes. Laravel will inject a cookie into web route 
-responses that will be automatically used by Axios during future requests. We use an HttpOnly cookie to
+responses that will be automatically used by Axios during future api requests. We use an HttpOnly cookie to
  secure our token. No need to store anything manually.
 
 ```php
