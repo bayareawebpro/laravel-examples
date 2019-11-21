@@ -3,8 +3,8 @@
 ```php
 <?php
 $client = new ApiClient();
-$client->setEndpoint();
-$client->setTimeout();
+$client->setEndpoint('http://my.api.app');
+$client->setTimeout(60);
 $client->setData([...]);
 $client->send();
 ```
