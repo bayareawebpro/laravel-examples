@@ -76,9 +76,6 @@ class EventSource implements Responsable
         $this->id = $id;
         $this->timeout = $retryTimeout;
         $this->closure = $closure;
-        $this->response->headers->set('Content-Type', 'text/event-stream');
-        $this->response->headers->set('X-Accel-Buffering', 'no');
-        $this->response->headers->set('Cach-Control', 'no-cache');
     }
 
     public static function make(string $id, int $retryTimeout, \Closure $closure)
@@ -124,12 +121,17 @@ class EventSource implements Responsable
 
     public function toResponse($request): StreamedResponse
     {
-        return new StreamedResponse(function (){
+
+        $response = new StreamedResponse(function (){
             $closure = $this->closure;
             $this->start();
             $closure($this);
             $this->close();
         })
+        $response->headers->set('X-Accel-Buffering', 'no');
+        $response->headers->set('Cach-Control', 'no-cache');
+        $response->headers->set('Content-Type', 'text/event-stream');
+        return $response;
     }
 }
 ```
