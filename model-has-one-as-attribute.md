@@ -22,8 +22,8 @@ function affiliate(){
  * @return void
  */
 function setAffiliateAttribute(array $values){
-  if($this->affiliate()->exists()){
-    $this->affiliate()->first()->update($values);
+  if($model = $this->affiliate()->first()){
+    $model->update($values);
   }else{
     $this->affiliate()->save(new Affiliate($value));
   }
