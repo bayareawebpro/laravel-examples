@@ -4,12 +4,12 @@
 use App\Http\Resources\SearchableResource;
 
 app('request')->merge([
-    'search' => '',
-    'name' => ''
+    'search' => 'test',
+    'settings->notify' => true
 ]);
 
 SearchableResource::make(User::query())
-    ->filterable(['name', 'updated_at'])
+    ->filterable(['settings->notify'])
     ->searchable(['name', 'email'])
     ->orderBy('name')
     ->sort('desc')
