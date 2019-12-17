@@ -1,4 +1,4 @@
-## Searchable Resource
+## Searchable JSON Resource
 
 ```php
 use App\Http\Resources\SearchableResource;
