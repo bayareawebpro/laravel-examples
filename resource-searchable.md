@@ -21,20 +21,8 @@ return SearchableResource::make(User::query())
      "data" => [
        [
          "id" => 2,
-         "name" => "test@test.test",
-         "email" => "test@test.test",
-         "email_verified_at" => "2019-12-17 07:55:19",
-         "settings" => [
-           "digest" => true,
-           "notify" => true,
-         ],
-         "created_at" => "2019-12-17 07:55:19",
-         "updated_at" => "2019-12-17 07:55:19",
-       ],
-       [
-         "id" => 1,
-         "name" => "test",
-         "email" => "test@test.com",
+         "name" => "test@provisioner.test",
+         "email" => "test@provisioner.test",
          "email_verified_at" => "2019-12-17 07:55:19",
          "settings" => [
            "digest" => true,
@@ -46,16 +34,19 @@ return SearchableResource::make(User::query())
      ],
      "current_page" => 1,
      "last_page" => 1,
-     "per_page" => 10,
-     "total" => 2,
+     "per_page" => 3,
+     "total" => 1,
      "orderBy" => "name",
      "sort" => "desc",
+     "search" => "test",
      "isFirstPage" => true,
      "isLastPage" => true,
      "isPaginated" => false,
-     "isFiltering" => false,
-     "isSearching" => false,
-];
+     "isSearching" => true,
+     "isFiltering" => [
+       "settings->notify" => true,
+     ],
+   ];
 ```
 
 ```php
