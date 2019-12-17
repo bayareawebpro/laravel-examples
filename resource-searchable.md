@@ -22,8 +22,8 @@ SearchableResource::make(User::query())
      "data" => [
        [
          "id" => 2,
-         "name" => "test@provisioner.test",
-         "email" => "test@provisioner.test",
+         "name" => "test@test.test",
+         "email" => "test@test.test",
          "email_verified_at" => "2019-12-17 07:55:19",
          "settings" => [
            "digest" => true,
@@ -34,8 +34,8 @@ SearchableResource::make(User::query())
        ],
        [
          "id" => 1,
-         "name" => "BayAreaBuilder",
-         "email" => "bayareabuilder@icloud.com",
+         "name" => "test",
+         "email" => "test@test.com",
          "email_verified_at" => "2019-12-17 07:55:19",
          "settings" => [
            "digest" => true,
