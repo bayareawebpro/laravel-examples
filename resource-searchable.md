@@ -72,8 +72,15 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         $orderBy = $this->getOrderBy();
         $sort = $this->getSort();
 
-        return Collection::make($this->query->orderBy($orderBy, $sort)->paginate($paginate))
+        $paginator = Collection::make($this->query->orderBy($orderBy, $sort)->paginate($paginate));
+
+        return $paginator
             ->merge(compact('orderBy', 'sort', 'paginate'))
+            ->put('isFirstPage', $paginator->get('current_page') === 1)
+            ->put('isLastPage',  $paginator->get('current_page') === $paginator->get('last_page'))
+            ->put('isPaginated', $paginator->get('total') > $paginator->get('paginate'))
+            ->put('isFiltering', $this->request->filled($this->filterable))
+            ->put('isSearching', $this->request->filled($this->searchable))
             ->forget([
                 'first_page_url',
                 'prev_page_url',
@@ -136,10 +143,12 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
     protected function applyFilterable(): void
     {
         $this->query->where(function (Builder $query) {
-            foreach ($this->filterable as $index => $field) {
-                $clause = $index === 0 ? 'where' : 'orWhere';
+            $index = 0;
+            foreach ($this->filterable as $field) {
                 if ($this->request->filled($field)) {
+                    $clause = $index === 0 ? 'where' : 'orWhere';
                     $query->$clause($field, $this->request->get($field));
+                    $index++;
                 }
             }
         });
@@ -147,14 +156,15 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
 
     protected function applySearchable(): void
     {
-        $this->query->where(function (Builder $query) {
-            foreach ($this->searchable as $index => $field) {
-                $clause = $index === 0 ? 'where' : 'orWhere';
-                if ($this->request->filled($field)) {
-                    $query->$clause($field, 'like', "%{$this->request->get($field)}%");
+        if($this->request->filled('search')){
+            $this->query->where(function (Builder $query) {
+                $keyword=$this->request->get('search');
+                foreach ($this->searchable as $index => $field) {
+                    $clause = $index === 0 ? 'where' : 'orWhere';
+                    $query->$clause($field, 'like', "%{$keyword}%");
                 }
-            }
-        });
+            });
+        }
     }
 }
 ```
