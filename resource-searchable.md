@@ -18,7 +18,6 @@ return SearchableResource::make(User::query())
 ```
 ```php
 [
-     "current_page" => 1,
      "data" => [
        [
          "id" => 2,
@@ -45,12 +44,12 @@ return SearchableResource::make(User::query())
          "updated_at" => "2019-12-17 07:55:19",
        ],
      ],
+     "current_page" => 1,
      "last_page" => 1,
      "per_page" => 10,
      "total" => 2,
      "orderBy" => "name",
      "sort" => "desc",
-     "paginate" => 10,
      "isFirstPage" => true,
      "isLastPage" => true,
      "isPaginated" => false,
@@ -74,10 +73,10 @@ use Illuminate\Http\Request;
 
 class SearchableResource implements Responsable, Arrayable, Jsonable
 {
-    protected $filterable = ['id'];
-    protected $searchable = ['id'];
+    protected $filterable = [];
+    protected $searchable = [];
     protected $paginate = 8;
-    protected $orderBy = 'id';
+    protected $orderBy = 'created_at';
     protected $sort = 'asc';
     protected $request;
     protected $query;
@@ -114,18 +113,19 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         $this->applySearchable();
         $this->applyFilterable();
 
-        $paginate = $this->getPaginate();
+        $perPage = $this->getPerPage();
         $orderBy = $this->getOrderBy();
         $sort = $this->getSort();
 
-        $paginator = Collection::make($this->query->orderBy($orderBy, $sort)->paginate($paginate));
+        $paginator = Collection::make($this->query->orderBy($orderBy, $sort)->paginate($perPage));
 
         return $paginator
-            ->merge(compact('orderBy', 'sort', 'paginate'))
+            ->merge(compact('orderBy', 'sort'))
+            ->merge($this->request->all('search'))
             ->put('isFirstPage', $paginator->get('current_page') === 1)
             ->put('isLastPage',  $paginator->get('current_page') === $paginator->get('last_page'))
             ->put('isPaginated', $paginator->get('isFirstPage') !== $paginator->get('isLastPage'))
-            ->put('isFiltering', $this->request->anyFilled($this->filterable))
+            ->put('isFiltering',$this->request->all($this->filterable))
             ->put('isSearching', $this->request->filled('search'))
             ->forget([
                 'first_page_url',
@@ -168,9 +168,9 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         return $this;
     }
 
-    protected function getPaginate()
+    protected function getPerPage()
     {
-        $value = $this->request->get('paginate', 4);
+        $value = $this->request->get('per_page', 4);
         return in_array($value, range(1, 100, 4)) ? $value : $this->paginate;
     }
 
@@ -213,6 +213,5 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         }
     }
 }
-
 
 ```
