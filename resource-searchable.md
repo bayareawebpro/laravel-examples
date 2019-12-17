@@ -119,8 +119,8 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
             ->merge(compact('orderBy', 'sort', 'paginate'))
             ->put('isFirstPage', $paginator->get('current_page') === 1)
             ->put('isLastPage',  $paginator->get('current_page') === $paginator->get('last_page'))
-            ->put('isPaginated', $paginator->get('total') > $paginator->get('paginate',$this->paginate))
-            ->put('isFiltering', $this->request->hasAny($this->filterable))
+            ->put('isPaginated', $paginator->get('isLastPage') !== $paginator->get('isLastPage'))
+            ->put('isFiltering', $this->request->anyFilled($this->filterable))
             ->put('isSearching', $this->request->filled('search'))
             ->forget([
                 'first_page_url',
@@ -208,5 +208,6 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         }
     }
 }
+
 
 ```
