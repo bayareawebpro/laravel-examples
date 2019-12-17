@@ -3,12 +3,17 @@
 ```php
 use App\Http\Resources\SearchableResource;
 
+app('request')->merge([
+    'search' => '',
+    'name' => ''
+]);
+
 SearchableResource::make(User::query())
-    ->filterable(['created_at', 'updated_at'])
+    ->filterable(['name', 'updated_at'])
     ->searchable(['name', 'email'])
     ->orderBy('name')
     ->sort('desc')
-    ->paginate(16)
+    ->paginate(10)
     ->toArray();
 ```
 ```php
