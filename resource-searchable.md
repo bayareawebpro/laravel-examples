@@ -8,7 +8,7 @@ app('request')->merge([
     'settings->notify' => true
 ]);
 
-SearchableResource::make(User::query())
+return SearchableResource::make(User::query())
     ->filterable(['settings->notify'])
     ->searchable(['name', 'email'])
     ->orderBy('name')
