@@ -11,7 +11,48 @@ SearchableResource::make(User::query())
     ->paginate(16)
     ->toArray();
 ```
-
+```php
+[
+ "current_page" => 1,
+ "data" => [
+   [
+     "id" => 2,
+     "name" => "test@provisioner.test",
+     "email" => "test@provisioner.test",
+     "email_verified_at" => "2019-12-17 07:55:19",
+     "settings" => [
+       "digest" => true,
+       "notify" => true,
+     ],
+     "created_at" => "2019-12-17 07:55:19",
+     "updated_at" => "2019-12-17 07:55:19",
+   ],
+   [
+     "id" => 1,
+     "name" => "BayAreaBuilder",
+     "email" => "bayareabuilder@icloud.com",
+     "email_verified_at" => "2019-12-17 07:55:19",
+     "settings" => [
+       "digest" => true,
+       "notify" => true,
+     ],
+     "created_at" => "2019-12-17 07:55:19",
+     "updated_at" => "2019-12-17 07:55:19",
+   ],
+ ],
+ "last_page" => 1,
+ "per_page" => 10,
+ "total" => 2,
+ "orderBy" => "name",
+ "sort" => "desc",
+ "paginate" => 10,
+ "isFirstPage" => true,
+ "isLastPage" => true,
+ "isPaginated" => true,
+ "isFiltering" => false,
+ "isSearching" => false,
+];
+```
 
 ```php
 <?php declare(strict_types=1);
