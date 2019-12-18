@@ -72,7 +72,7 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
     protected $request;
     protected $query;
 
-    public static function make(Builder $query)
+    public static function make(Builder $query): self
     {
         return app(static::class, compact('query'));
     }
@@ -83,31 +83,31 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         $this->query = $query;
     }
 
-    public function filterable($filterable)
+    public function filterable($filterable): self
     {
         $this->filterable = array_merge($this->filterable, (array)$filterable);
         return $this;
     }
 
-    public function searchable($searchable)
+    public function searchable($searchable): self
     {
         $this->searchable = array_merge($this->searchable, (array)$searchable);
         return $this;
     }
 
-    public function paginate(int $paginate)
+    public function paginate(int $paginate): self
     {
         $this->paginate = $paginate;
         return $this;
     }
 
-    public function orderBy(string $orderBy)
+    public function orderBy(string $orderBy): self
     {
         $this->orderBy = $orderBy;
         return $this;
     }
 
-    public function sort(string $sort)
+    public function sort(string $sort): self
     {
         $this->sort = $sort;
         return $this;
@@ -140,19 +140,19 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         }
     }
 
-    protected function getPerPage()
+    protected function getPerPage():int
     {
         $value = $this->request->get('per_page', $this->paginate);
         return in_array($value, range(1, 60)) ? $value : $this->paginate;
     }
 
-    protected function getSort()
+    protected function getSort():string
     {
         $value = $this->request->get('sort', $this->sort);
         return in_array($value, ['asc', 'desc']) ? $value : $this->sort;
     }
 
-    protected function getOrderBy()
+    protected function getOrderBy():string
     {
         $value = $this->request->get('orderBy', $this->orderBy);
         return in_array($value, $this->filterable) ? $value : $this->orderBy;
@@ -190,21 +190,20 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
             ]);
     }
 
-    public function toResponse($request)
+    public function toResponse($request): JsonResponse
     {
         $this->request = $request;
         return JsonResponse::create($this->toArray());
     }
 
-    public function toJson($options = 0)
+    public function toJson($options = 0): string
     {
         return $this->toCollection()->toJson($options);
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         return $this->toCollection()->toArray();
     }
 }
-
 ```
