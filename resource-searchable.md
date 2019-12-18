@@ -173,7 +173,7 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
 
         return $paginator
             ->merge(compact('orderBy', 'sort'))
-            ->merge($this->request->get('search'))
+            ->merge($this->request->only('search'))
             ->put('isFirstPage', $paginator->get('current_page') === 1)
             ->put('isLastPage',  $paginator->get('current_page') === $paginator->get('last_page'))
             ->put('isPaginated', $paginator->get('isFirstPage') !== $paginator->get('isLastPage'))
