@@ -116,12 +116,9 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
     protected function applyFilterable(): void
     {
         $this->query->where(function (Builder $query) {
-            $index = 0;
             foreach ($this->filterable as $field) {
                 if ($this->request->filled($field)) {
-                    $clause = $index === 0 ? 'where' : 'orWhere';
-                    $query->$clause($field, $this->request->get($field));
-                    $index++;
+                    $query->where($field, $this->request->get($field));
                 }
             }
         });
