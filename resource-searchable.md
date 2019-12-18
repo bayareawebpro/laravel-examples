@@ -54,21 +54,21 @@ return SearchableResource::make(User::query())
 
 namespace App\Http\Resources;
 
+use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
-use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SearchableResource implements Responsable, Arrayable, Jsonable
 {
-    protected $filterable = [];
-    protected $searchable = [];
+    protected $sort = 'asc';
     protected $paginate = 8;
     protected $orderBy = 'created_at';
-    protected $sort = 'asc';
+    protected $filterable = [];
+    protected $searchable = [];
     protected $request;
     protected $query;
 
@@ -81,52 +81,6 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
     {
         $this->request = $request;
         $this->query = $query;
-    }
-
-    public function toResponse($request)
-    {
-        $this->request = $request;
-        return JsonResponse::create($this->toArray());
-    }
-
-    public function toJson($options = 0)
-    {
-        return $this->toCollection()->toJson($options);
-    }
-
-    public function toArray()
-    {
-        return $this->toCollection()->toArray();
-    }
-
-    public function toCollection(): Collection
-    {
-        $this->applySearchable();
-        $this->applyFilterable();
-
-        $perPage = $this->getPerPage();
-        $orderBy = $this->getOrderBy();
-        $sort = $this->getSort();
-
-        $paginator = Collection::make($this->query->orderBy($orderBy, $sort)->paginate($perPage));
-
-        return $paginator
-            ->merge(compact('orderBy', 'sort'))
-            ->merge($this->request->all('search'))
-            ->put('isFirstPage', $paginator->get('current_page') === 1)
-            ->put('isLastPage',  $paginator->get('current_page') === $paginator->get('last_page'))
-            ->put('isPaginated', $paginator->get('isFirstPage') !== $paginator->get('isLastPage'))
-            ->put('isFiltering',$this->request->all($this->filterable))
-            ->put('isSearching', $this->request->filled('search'))
-            ->forget([
-                'first_page_url',
-                'prev_page_url',
-                'next_page_url',
-                'last_page_url',
-                'path',
-                'from',
-                'to',
-            ]);
     }
 
     public function filterable($filterable)
@@ -159,24 +113,6 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         return $this;
     }
 
-    protected function getPerPage()
-    {
-        $value = $this->request->get('per_page', 4);
-        return in_array($value, range(1, 100, 4)) ? $value : $this->paginate;
-    }
-
-    protected function getSort()
-    {
-        $value = $this->request->get('sort', $this->sort);
-        return in_array($value, ['asc', 'desc']) ? $value : $this->sort;
-    }
-
-    protected function getOrderBy()
-    {
-        $value = $this->request->get('orderBy', $this->orderBy);
-        return in_array($value, $this->filterable) ? $value : $this->orderBy;
-    }
-
     protected function applyFilterable(): void
     {
         $this->query->where(function (Builder $query) {
@@ -202,6 +138,72 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
                 }
             });
         }
+    }
+
+    protected function getPerPage()
+    {
+        $value = $this->request->get('per_page', $this->paginate);
+        return in_array($value, range(1, 60)) ? $value : $this->paginate;
+    }
+
+    protected function getSort()
+    {
+        $value = $this->request->get('sort', $this->sort);
+        return in_array($value, ['asc', 'desc']) ? $value : $this->sort;
+    }
+
+    protected function getOrderBy()
+    {
+        $value = $this->request->get('orderBy', $this->orderBy);
+        return in_array($value, $this->filterable) ? $value : $this->orderBy;
+    }
+
+    public function toCollection(): Collection
+    {
+        $this->applySearchable();
+        $this->applyFilterable();
+
+        $sort = $this->getSort();
+        $orderBy = $this->getOrderBy();
+
+        $paginator = Collection::make($this->query
+            ->orderBy($orderBy, $sort)
+            ->paginate($this->getPerPage())
+        );
+
+        return $paginator
+            ->merge(compact('orderBy', 'sort'))
+            ->merge($this->request->all('search'))
+            ->put('isFirstPage', $paginator->get('current_page') === 1)
+            ->put('isLastPage',  $paginator->get('current_page') === $paginator->get('last_page'))
+            ->put('isPaginated', $paginator->get('isFirstPage') !== $paginator->get('isLastPage'))
+            ->put('isFiltering',$this->request->only($this->filterable))
+            ->put('isSearching', $this->request->filled('search'))
+            ->forget([
+                'first_page_url',
+                'prev_page_url',
+                'next_page_url',
+                'last_page_url',
+                'path',
+                'from',
+                'to',
+            ]);
+    }
+
+    public function toResponse($request)
+    {
+        $this->request = $request;
+        return JsonResponse::create($this->toArray());
+    }
+
+    public function toJson($options = 0)
+    {
+        return $this->toCollection()->toJson($options);
+    }
+
+    public function toArray()
+    {
+        return $this->toCollection()->toArray();
     }
 }
 
