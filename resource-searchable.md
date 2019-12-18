@@ -108,7 +108,7 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
 
     public function orderBy(string $orderBy): self
     {
-        $this->orderBy = $orderBy;
+        $this->order_by = $orderBy;
         return $this;
     }
 
@@ -127,7 +127,7 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
 
     protected function applySearchable(): void
     {
-        if($this->request->filled('search')){
+        if ($this->request->filled('search')) {
             $this->query->where(function (Builder $query) {
                 $keyword = $this->request->get('search');
                 foreach ($this->searchable as $index => $field) {
@@ -138,26 +138,31 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         }
     }
 
-    protected function getPerPage():int
+    protected function getPerPage(): int
     {
         $value = $this->request->get('per_page', $this->paginate);
         return in_array($value, range(1, 60)) ? $value : $this->paginate;
     }
 
-    protected function getSort():string
+    protected function getSort(): string
     {
         $value = $this->request->get('sort', $this->sort);
         return in_array($value, ['asc', 'desc']) ? $value : $this->sort;
     }
 
-    protected function getOrderBy():string
+    protected function getOrderBy(): string
     {
         $value = $this->request->get('order_by', $this->order_by);
-        return in_array($value, array_merge(
+        return in_array($value, $this->getAllowedFields()) ? $value : $this->order_by;
+    }
+
+    protected function getAllowedFields(): array
+    {
+        return array_merge(
             $this->searchable,
             $this->filterable,
             [$this->order_by]
-        )) ? $value : $this->order_by;
+        );
     }
 
     public function toCollection(): Collection
@@ -176,11 +181,11 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         return $paginator
             ->put('order_by', $order_by)
             ->put('sort', $sort)
-            ->put('search',$this->request->get('search'))
+            ->put('search', $this->request->get('search'))
             ->put('isFirstPage', $paginator->get('current_page') === 1)
-            ->put('isLastPage',  $paginator->get('current_page') === $paginator->get('last_page'))
+            ->put('isLastPage', $paginator->get('current_page') === $paginator->get('last_page'))
             ->put('isPaginated', $paginator->get('isFirstPage') !== $paginator->get('isLastPage'))
-            ->put('isFiltering',$this->request->only($this->filterable))
+            ->put('isFiltering', $this->request->only($this->filterable))
             ->put('isSearching', $this->request->filled('search'))
             ->forget([
                 'first_page_url',
