@@ -20,39 +20,6 @@ SearchableResource::make(User::query())
     ->paginate(20)
     ->toArray();
 ```
-```php
-[
-     "data" => [
-       [
-         "id" => 2,
-         "name" => "test@provisioner.test",
-         "email" => "test@provisioner.test",
-         "email_verified_at" => "2019-12-17 07:55:19",
-         "settings" => [
-           "digest" => true,
-           "notify" => true,
-         ],
-         "created_at" => "2019-12-17 07:55:19",
-         "updated_at" => "2019-12-17 07:55:19",
-       ],
-     ],
-      "total" => 1,
-      "sort" => "asc",
-      "search" => "test",
-      "order_by" => "email",
-      "current_page" => 1,
-      "last_page" => 1,
-      "per_page" => 4,
-      "isFirstPage" => true,
-      "isLastPage" => true,
-      "isPaginated" => false,
-      "isSearching" => true,
-      "isFiltering" => [
-        "settings->notify" => true,
-        "settings->digest" => true,
-      ],
-   ];
-```
 
 ```php
 <?php declare(strict_types=1);
