@@ -5,15 +5,19 @@ use App\Http\Resources\SearchableResource;
 
 app('request')->merge([
     'search' => 'test',
-    'settings->notify' => true
+    'sort' => 'asc',
+    'per_page' => 4,
+    'order_by' => 'email',
+    'settings->notify' => true,
+    'settings->digest' => true
 ]);
 
-return SearchableResource::make(User::query())
-    ->filterable(['settings->notify'])
+SearchableResource::make(User::query())
+    ->filterable(['settings->notify', 'settings->digest'])
     ->searchable(['name', 'email'])
-    ->orderBy('name')
+    ->orderBy('email')
     ->sort('desc')
-    ->paginate(10)
+    ->paginate(20)
     ->toArray();
 ```
 ```php
@@ -32,20 +36,21 @@ return SearchableResource::make(User::query())
          "updated_at" => "2019-12-17 07:55:19",
        ],
      ],
-     "current_page" => 1,
-     "last_page" => 1,
-     "per_page" => 3,
-     "total" => 1,
-     "orderBy" => "name",
-     "sort" => "desc",
-     "search" => "test",
-     "isFirstPage" => true,
-     "isLastPage" => true,
-     "isPaginated" => false,
-     "isSearching" => true,
-     "isFiltering" => [
-       "settings->notify" => true,
-     ],
+      "total" => 1,
+      "sort" => "asc",
+      "search" => "test",
+      "order_by" => "email",
+      "current_page" => 1,
+      "last_page" => 1,
+      "per_page" => 4,
+      "isFirstPage" => true,
+      "isLastPage" => true,
+      "isPaginated" => false,
+      "isSearching" => true,
+      "isFiltering" => [
+        "settings->notify" => true,
+        "settings->digest" => true,
+      ],
    ];
 ```
 
@@ -66,7 +71,7 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
 {
     protected $sort = 'asc';
     protected $paginate = 8;
-    protected $orderBy = 'created_at';
+    protected $order_by = 'created_at';
     protected $filterable = [];
     protected $searchable = [];
     protected $request;
@@ -116,11 +121,7 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
     protected function applyFilterable(): void
     {
         $this->query->where(function (Builder $query) {
-            foreach ($this->filterable as $field) {
-                if ($this->request->filled($field)) {
-                    $query->where($field, $this->request->get($field));
-                }
-            }
+            $query->where($this->request->only($this->filterable));
         });
     }
 
@@ -128,7 +129,7 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
     {
         if($this->request->filled('search')){
             $this->query->where(function (Builder $query) {
-                $keyword=$this->request->get('search');
+                $keyword = $this->request->get('search');
                 foreach ($this->searchable as $index => $field) {
                     $clause = $index === 0 ? 'where' : 'orWhere';
                     $query->$clause($field, 'like', "%{$keyword}%");
@@ -151,8 +152,12 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
 
     protected function getOrderBy():string
     {
-        $value = $this->request->get('orderBy', $this->orderBy);
-        return in_array($value, $this->filterable) ? $value : $this->orderBy;
+        $value = $this->request->get('order_by', $this->order_by);
+        return in_array($value, array_merge(
+            $this->searchable,
+            $this->filterable,
+            [$this->order_by]
+        )) ? $value : $this->order_by;
     }
 
     public function toCollection(): Collection
@@ -161,16 +166,17 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         $this->applyFilterable();
 
         $sort = $this->getSort();
-        $orderBy = $this->getOrderBy();
+        $order_by = $this->getOrderBy();
 
         $paginator = Collection::make($this->query
-            ->orderBy($orderBy, $sort)
+            ->orderBy($order_by, $sort)
             ->paginate($this->getPerPage())
         );
 
         return $paginator
-            ->merge(compact('orderBy', 'sort'))
-            ->merge($this->request->only('search'))
+            ->put('order_by', $order_by)
+            ->put('sort', $sort)
+            ->put('search',$this->request->get('search'))
             ->put('isFirstPage', $paginator->get('current_page') === 1)
             ->put('isLastPage',  $paginator->get('current_page') === $paginator->get('last_page'))
             ->put('isPaginated', $paginator->get('isFirstPage') !== $paginator->get('isLastPage'))
