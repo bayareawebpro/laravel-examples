@@ -26,30 +26,52 @@ SearchableResource::make(User::query())
 
 namespace App\Http\Resources;
 
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class SearchableResource implements Responsable, Arrayable, Jsonable
 {
-    protected $sort = 'asc';
-    protected $paginate = 8;
-    protected $order_by = 'created_at';
-    protected $filterable = [];
+    use ValidatesRequests;
+
+    protected $sort = 'desc';
+    protected $paginate = 12;
+    protected $order_by = 'id';
     protected $searchable = [];
+    protected $appendable = [];
+    protected $filterable = ['id', 'created_at', 'updated_at'];
     protected $request;
+
+    public static function validationRules()
+    {
+        return [
+            'search'   => 'sometimes|nullable|string|max:255',
+            'sort_by'  => 'sometimes|string|in:asc,desc',
+            'per_page' => 'sometimes|numeric|in:4,8,16,24',
+            'order_by' => 'sometimes|string|in:id,created_at,updated_at',
+        ];
+    }
+
+    /**
+     * @var Builder
+     */
     protected $query;
 
-    public static function make(Builder $query): self
+    public static function make($query): self
     {
         return app(static::class, compact('query'));
     }
 
-    public function __construct(Request $request, Builder $query)
+    public function __construct(Request $request, $query)
     {
         $this->request = $request;
         $this->query = $query;
@@ -58,6 +80,12 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
     public function filterable($filterable): self
     {
         $this->filterable = array_merge($this->filterable, (array)$filterable);
+        return $this;
+    }
+
+    public function appendable($appendable): self
+    {
+        $this->appendable = array_merge($this->appendable, (array)$appendable);
         return $this;
     }
 
@@ -85,6 +113,55 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         return $this;
     }
 
+    public function toCollection(): Collection
+    {
+        $this->applySearchable();
+        $this->applyFilterable();
+
+        $sort = $this->getSort();
+        $order = $this->getOrderBy();
+
+        $paginator = $this->query
+            ->orderBy($order, $sort)
+            ->paginate($this->getPerPage());
+
+
+        return Collection::make([
+            'resource' => [
+                'data'       => $this->formatEntries($paginator->items()),
+                'query'      => $this->formatQuery($paginator, $order, $sort),
+                'pagination' => $this->formatPaginator($paginator),
+            ],
+        ]);
+    }
+
+    protected function formatEntries(array $entries): array
+    {
+        if (count($this->appendable)) {
+            foreach ($entries as $entry) {
+                $entry->append($this->appendable);
+            }
+        }
+        return $entries;
+    }
+
+    public function toResponse($request): JsonResponse
+    {
+        $this->request = $request;
+        $this->validate($request, static::validationRules());
+        return JsonResponse::create($this->toArray());
+    }
+
+    public function toJson($options = 0): string
+    {
+        return $this->toCollection()->toJson($options);
+    }
+
+    public function toArray(): array
+    {
+        return $this->toCollection()->toArray();
+    }
+
     protected function applyFilterable(): void
     {
         $this->query->where(function (Builder $query) {
@@ -99,10 +176,33 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
                 $keyword = $this->request->get('search');
                 foreach ($this->searchable as $index => $field) {
                     $clause = $index === 0 ? 'where' : 'orWhere';
+                    if (Str::contains($field, ':')) {
+                        $this->buildRelationQuery($query, $clause, $field, $keyword);
+                        return;
+                    }
+                    throw_unless(
+                        method_exists($query, $clause),
+                        \InvalidArgumentException::class,
+                        "Invalid Clause: $clause"
+                    );
                     $query->$clause($field, 'like', "%{$keyword}%");
                 }
             });
         }
+    }
+
+    protected function buildRelationQuery($query, $clause, $field, $keyword): void
+    {
+        $clause = "{$clause}Has";
+        throw_unless(
+            method_exists($query, $clause),
+            \InvalidArgumentException::class,
+            "Invalid Clause: $clause"
+        );
+        $segments = Collection::make(explode(':', $field));
+        $query->$clause($segments->first(), function (Builder $query) use ($clause, $segments, $keyword) {
+            $query->where($segments->last(), 'like', "%{$keyword}%");
+        });
     }
 
     protected function getPerPage(): int
@@ -132,57 +232,21 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         );
     }
 
-    public function toCollection(): Collection
+    protected function formatPaginator(LengthAwarePaginator $paginator): array
     {
-        $this->applySearchable();
-        $this->applyFilterable();
-
-        $sort = $this->getSort();
-        $order_by = $this->getOrderBy();
-
-        $paginator = Collection::make($this->query
-            ->orderBy($order_by, $sort)
-            ->paginate($this->getPerPage())
-        );
-
-        return Collection::make([
-            'data'       => $paginator->get('data'),
-            'query'      => $this->formatQuery($paginator, $order_by, $sort),
-            'pagination' => $this->formatPagination($paginator),
+        return array_merge(Arr::except($paginator->toArray(), ['data']), [
+            'isFirstPage' => $paginator->currentPage() === 1,
+            'isLastPage'  => $paginator->currentPage() === $paginator->lastPage(),
         ]);
     }
 
-    public function toResponse($request): JsonResponse
-    {
-        $this->request = $request;
-        return JsonResponse::create($this->toArray());
-    }
-
-    public function toJson($options = 0): string
-    {
-        return $this->toCollection()->toJson($options);
-    }
-
-    public function toArray(): array
-    {
-        return $this->toCollection()->toArray();
-    }
-
-    protected function formatPagination(Collection $paginator): array
-    {
-        return array_merge($paginator->except('data')->all(), [
-            'isFirstPage' => $paginator->get('current_page') === 1,
-            'isLastPage'  => $paginator->get('current_page') === $paginator->get('last_page'),
-        ]);
-    }
-
-    protected function formatQuery(Collection $paginator, string $order_by, string $sort): array
+    protected function formatQuery(LengthAwarePaginator $paginator, string $order_by, string $sort): array
     {
         return array_merge($this->request->only($this->filterable), [
-            'search'   => $this->request->get('search'),
-            'page'     => $paginator->get('current_page'),
+            'page'     => $paginator->currentPage(),
             'order_by' => $order_by,
             'sort'     => $sort,
+            'search'   => $this->request->get('search'),
         ]);
     }
 }
