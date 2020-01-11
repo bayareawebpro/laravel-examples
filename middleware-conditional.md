@@ -1,3 +1,5 @@
+> Notice: This example needs further troubleshooting for the newest verson 6.x.  Use with caution.
+
 ```php
 <?php
 namespace App\Http\Middleware;
