@@ -13,14 +13,16 @@ $collection->sortByMulti([
  * Sort By Multi Macro
  * @source https://www.jjanusch.com/2017/05/laravel-collection-macros-adding-a-sortbymuti-function
  */
-\Illuminate\Support\Collection::macro('sortByMulti', function(array $keys) {
+\Illuminate\Support\Collection::macro('sortByMulti', function (array $keys) {
     $currentIndex = 0;
-
-    $keys = array_map(function ($key, $sort) {
-        return ['key' => $key, 'sort' => $sort];
-    }, array_keys($keys), $keys);
-
-    $sortBy = function (\Illuminate\Support\Collection $collection) use (&$currentIndex, $keys, &$sortBy) {
+    $keys = array_map(
+        function ($key, $sort) {
+            return ['key' => $key, 'sort' => $sort];
+        },
+        array_keys($keys),
+        $keys
+    );
+    $sortBy = function (\Illuminate\Support\Collection $collection) use (&$currentIndex,$keys,&$sortBy) {
         if ($currentIndex >= count($keys)) {
             return $collection;
         }
@@ -28,10 +30,12 @@ $collection->sortByMulti([
         $sort = $keys[$currentIndex]['sort'];
         $sortFunc = $sort === 'DESC' ? 'sortByDesc' : 'sortBy';
         $currentIndex++;
-        return $collection->$sortFunc($key)->groupBy($key)->map($sortBy)->ungroup();
+        return $collection
+            ->$sortFunc($key)
+            ->groupBy($key)
+            ->map($sortBy)
+            ->ungroup();
     };
-
-    /** @var \Illuminate\Support\Collection $this */
     return $sortBy($this);
 });
 
