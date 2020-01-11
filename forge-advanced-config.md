@@ -133,7 +133,7 @@ server {
 
 Upload to `/home/forge/nginx-ssl.conf`
 
-> Notice:  These directives are less secure than the forge defaults and should not be used for any application that stores sensitive data.  Wide compatibility comes with tradeoffs.
+> Notice:  These directives are less secure (IE Support) than the forge defaults and should not be used for any application that stores sensitive data.  Wide compatibility comes with tradeoffs.
 
 ```nginx
 # Add Cyphers
