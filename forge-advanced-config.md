@@ -96,9 +96,9 @@ font/opentype;
 Update each server block to include the custom SSL Conf. The alias 
 redirects are not editable via the forge UI.
 ```
-/etc/nginx/forge-conf/a1autotransport.com/before/ssl_redirect.conf
-/etc/nginx/forge-conf/www.a1autotransport.com/before/ssl_redirect.conf
-/etc/nginx/forge-conf/staging.a1autotransport.com/before/ssl_redirect.conf
+/etc/nginx/forge-conf/site.com/before/ssl_redirect.conf
+/etc/nginx/forge-conf/www.site.com/before/ssl_redirect.conf
+/etc/nginx/forge-conf/staging.site.com/before/ssl_redirect.conf
 ```
 
 #### Edit Config
