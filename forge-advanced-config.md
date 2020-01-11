@@ -103,7 +103,7 @@ redirects are not editable via the forge UI.
 
 #### Edit Config
 ```shell script
-sudo nano /etc/nginx/forge-conf/a1autotransport.com/before/ssl_redirect.conf
+sudo nano /etc/nginx/forge-conf/site.com/before/ssl_redirect.conf
 ```
 
 #### Test Config
