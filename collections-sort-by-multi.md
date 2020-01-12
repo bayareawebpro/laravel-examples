@@ -1,3 +1,5 @@
+>  Notice: this macro has been reported to produce inconsistent results.  A unit test and refactoring is needed.
+
 ```
 $collection->sortByMulti([
    'state'       => 'ASC',
