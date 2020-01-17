@@ -228,7 +228,7 @@ use Tests\TestCase;
 
 class ResponseCacheTest extends TestCase
 {
-    public function test_enable_cache_disabled()
+    public function test_can_disable()
     {
         Config::set('response.cache.enabled', false);
 
@@ -243,7 +243,7 @@ class ResponseCacheTest extends TestCase
             ->assertOk();
     }
 
-    public function test_enable_cache()
+    public function test_can_prime()
     {
         Config::set('response.cache.enabled', true);
 
@@ -273,7 +273,7 @@ class ResponseCacheTest extends TestCase
             ->assertOk();
     }
 
-    public function test_enable_clear()
+    public function test_can_clear()
     {
         Config::set('response.cache.enabled', true);
 
