@@ -1,7 +1,8 @@
 ## Response Cache Service / Middleware
 
 - Similar to Spatie's Response Cache but will minify the html before caching. (see related service)
-- Able to prime the cache via jobs using the public methods.
+- Able to prime the cache via queued jobs.
+- Does not serialize anything.
 
 #### Usage: 
 ```php
@@ -208,6 +209,9 @@ class PrimeCacheForPages implements ShouldQueue
     }
 }
 ```
+
+
+
 
 #### Basic Feature Tests
 
