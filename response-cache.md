@@ -209,3 +209,93 @@ class PrimeCacheForPages implements ShouldQueue
     }
 }
 ```
+
+
+
+
+#### Basic Feature Tests
+
+```php
+<?php declare(strict_types=1);
+
+namespace Tests\Feature;
+
+use App\Jobs\PrimeCacheForPages;
+use App\Services\ResponseCache;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
+use Tests\TestCase;
+
+class ResponseCacheTest extends TestCase
+{
+    public function test_enable_cache_disabled()
+    {
+        Config::set('response.cache.enabled', false);
+
+        $this
+            ->get(url('/services/'))
+            ->assertHeaderMissing('X-Cached')
+            ->assertOk();
+
+        $this
+            ->get(url('/services/'))
+            ->assertHeaderMissing('X-Cached')
+            ->assertOk();
+    }
+
+    public function test_enable_cache()
+    {
+        Config::set('response.cache.enabled', true);
+
+        $this
+            ->get(url('/services/'))
+            ->assertHeaderMissing('X-Cached')
+            ->assertOk();
+
+        $this
+            ->get(url('/about-us/'))
+            ->assertHeaderMissing('X-Cached')
+            ->assertOk();
+
+        PrimeCacheForPages::dispatchNow(Collection::make([
+            'services',
+            'about-us'
+        ]));
+
+        $this
+            ->get(url('/services/'))
+            ->assertHeader('X-Cached')
+            ->assertOk();
+
+        $this
+            ->get(url('/about-us/'))
+            ->assertHeader('X-Cached')
+            ->assertOk();
+    }
+
+    public function test_enable_clear()
+    {
+        Config::set('response.cache.enabled', true);
+
+        PrimeCacheForPages::dispatchNow(Collection::make(['services']));
+
+        $this
+            ->get(url('/services/'))
+            ->assertHeader('X-Cached')
+            ->assertOk();
+
+        ResponseCache::make()->flushCache();
+
+        $this
+            ->get(url('/services/'))
+            ->assertHeaderMissing('X-Cached')
+            ->assertOk();
+
+        $this
+            ->get(url('/services/'))
+            ->assertHeader('X-Cached')
+            ->assertOk();
+
+    }
+}
+```
