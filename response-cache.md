@@ -41,18 +41,27 @@ class ResponseCache
 namespace App\Services;
 
 use Illuminate\Http\Request;
-use Illuminate\Cache\Repository;
+
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+
+use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
+
 use Symfony\Component\HttpFoundation\Response;
 
 class ResponseCache
 {
     protected $request;
+    protected $storage;
     protected $cache;
 
-    public function __construct(Repository $cache, Request $request)
+    public function __construct(Request $request)
     {
-        $this->cache = $cache->tags(config('response.cache.tags', ['response']));
         $this->request = $request;
+        $this->storage = $this->getStorage();
+        $this->cache = $this->getCache();
     }
 
     public static function make(): ResponseCache
@@ -66,7 +75,6 @@ class ResponseCache
             return $this->restoreFromCache();
         }
 
-        /** @var Response $response */
         $response = $next($this->request);
 
         if ($this->shouldCache($response)) {
@@ -78,31 +86,29 @@ class ResponseCache
 
     public function storeInCache(Response $response): bool
     {
-        $content = $response->getContent();
-        $content = $this->replaceToken($content);
-        $content = $this->minifyContent($content);
+        $content = $this->replaceToken($response->getContent());
+
+        $this->storeContents($content);
 
         return $this->cache->forever($this->getCacheKey(), [
-            'headers' => $response->headers->all(),
             'status'  => $response->getStatusCode(),
-            'content' => $content,
+            'headers' => array_merge($response->headers->all(), [
+                'Cache-Control' => 'must-revalidate,public',
+                'X-Cached'      => now()->toRfc2822String(),
+                'etag'          => md5($content),
+            ]),
         ]);
     }
 
     public function restoreFromCache(): Response
     {
-        $data = $this->cache->get($this->getCacheKey());
+        $cacheKey = $this->getCacheKey();
 
-        $data['content'] = $this->restoreToken($data['content']);
-        $data['headers'] = array_merge($data['headers'], [
-            'X-Cached' => now()->toRfc2822String(),
-        ]);
+        $data = $this->cache->get($cacheKey);
 
-        return response(
-            $data['content'],
-            $data['status'],
-            $data['headers']
-        );
+        $content = $this->restoreToken($this->readContents());
+
+        return response($content, $data['status'], $data['headers']);
     }
 
     protected function shouldCache(Response $response): bool
@@ -124,24 +130,50 @@ class ResponseCache
         return str_replace(config('response.cache.token_placeholder', '<TOKEN>'), csrf_token(), $content);
     }
 
-    protected function minifyContent(string $content): string
-    {
-        return HtmlMinifier::minify($content);
-    }
-
     protected function getCacheKey(): string
     {
-        return "response-" . md5($this->request->getRequestUri());
+        return Str::slug($this->request->path());
+    }
+
+    protected function getCacheFilePath(): string
+    {
+        return "response-cache/{$this->getCacheKey()}.html";
+    }
+
+    protected function readContents(): string
+    {
+        return $this->storage->get($this->getCacheFilePath());
+    }
+
+    protected function storeContents(string $contents): bool
+    {
+        return $this->storage->put($this->getCacheFilePath(), $contents);
+    }
+
+    protected function contentsExists(): bool
+    {
+        return $this->storage->exists($this->getCacheFilePath());
     }
 
     protected function isCached(): bool
     {
-        return $this->cache->has($this->getCacheKey());
+        return $this->cache->has($this->getCacheKey()) && $this->contentsExists();
     }
 
     public function flushCache(): void
     {
-        $this->cache->clear();
+        $this->cache->flush();
+        $this->storage->deleteDirectory('response-cache');
+    }
+
+    protected function getStorage(): Filesystem
+    {
+        return Storage::disk((string)config('response.cache.disk', 'local'));
+    }
+
+    protected function getCache(): CacheRepository
+    {
+        return Cache::store((string)config('response.cache.store', 'redis'));
     }
 }
 ```
@@ -210,15 +242,12 @@ class PrimeCacheForPages implements ShouldQueue
 }
 ```
 
-
-
-
 #### Basic Feature Tests
 
 ```php
 <?php declare(strict_types=1);
 
-namespace Tests\Feature;
+namespace Tests\Unit;
 
 use App\Jobs\PrimeCacheForPages;
 use App\Services\ResponseCache;
@@ -228,24 +257,28 @@ use Tests\TestCase;
 
 class ResponseCacheTest extends TestCase
 {
-    public function test_can_disable()
+    public function test_cache_disabled()
     {
         Config::set('response.cache.enabled', false);
 
+        ResponseCache::make()->flushCache();
+
         $this
-            ->get(url('/services/'))
+            ->get('services')
             ->assertHeaderMissing('X-Cached')
             ->assertOk();
 
         $this
-            ->get(url('/services/'))
+            ->get('services')
             ->assertHeaderMissing('X-Cached')
             ->assertOk();
     }
 
-    public function test_can_prime()
+    public function test_cache_enabled()
     {
         Config::set('response.cache.enabled', true);
+
+        ResponseCache::make()->flushCache();
 
         $this
             ->get(url('/services/'))
@@ -257,15 +290,14 @@ class ResponseCacheTest extends TestCase
             ->assertHeaderMissing('X-Cached')
             ->assertOk();
 
-        PrimeCacheForPages::dispatchNow(Collection::make([
-            'services',
-            'about-us'
-        ]));
+        PrimeCacheForPages::dispatchNow('services');
 
         $this
             ->get(url('/services/'))
             ->assertHeader('X-Cached')
             ->assertOk();
+
+        PrimeCacheForPages::dispatchNow('about-us');
 
         $this
             ->get(url('/about-us/'))
@@ -273,14 +305,18 @@ class ResponseCacheTest extends TestCase
             ->assertOk();
     }
 
-    public function test_can_clear()
+    public function test_cache_clear()
     {
+
         Config::set('response.cache.enabled', true);
 
-        PrimeCacheForPages::dispatchNow(Collection::make(['services']));
+        ResponseCache::make()->flushCache();
+
+        PrimeCacheForPages::dispatchNow('services');
 
         $this
             ->get(url('/services/'))
+            ->dumpHeaders()
             ->assertHeader('X-Cached')
             ->assertOk();
 
@@ -291,11 +327,12 @@ class ResponseCacheTest extends TestCase
             ->assertHeaderMissing('X-Cached')
             ->assertOk();
 
+        PrimeCacheForPages::dispatchNow('services');
+
         $this
             ->get(url('/services/'))
             ->assertHeader('X-Cached')
             ->assertOk();
-
     }
 }
 ```
