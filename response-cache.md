@@ -184,35 +184,24 @@ class ResponseCache
 
 namespace App\Jobs;
 
-use App\Services\ResponseCache;
-use App\Services\ContentResolver;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
-use Laravel\Telescope\Telescope;
-
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\App;
+use Laravel\Telescope\Telescope;
 use Illuminate\Bus\Queueable;
+use Illuminate\Http\Request;
 
 class PrimeCacheForPages implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /**
-     * @var Collection
-     */
-    public $slugs;
+    public $slug;
 
-    /**
-     * Create a new job instance.
-     * @param Collection $slugs
-     */
-    public function __construct(Collection $slugs)
+    public function __construct($slug)
     {
-        $this->slugs = $slugs;
+        $this->slug = $slug;
     }
 
     /**
@@ -222,22 +211,7 @@ class PrimeCacheForPages implements ShouldQueue
     public function handle()
     {
         Telescope::stopRecording();
-
-        $this->slugs->each(function($slug){
-
-            /**
-            * Make the cache service.
-            * We are running in "console context" and we will need a 
-            * "Faux Request" instance for the url cache key.
-            */
-            $cache = app(ResponseCache::class, ['request' => Request::create(url($slug))]);
-            
-            // Get the controller's view response programmatically.
-            $response = app()->call('\App\Http\Controllers\PageController@show', ['page' => $slug]);
-
-            // Store the response in the cache.
-            $cache->storeInCache($response);
-        });
+        App::handle(Request::create("/$this->slug"));
     }
 }
 ```
