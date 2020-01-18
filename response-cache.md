@@ -1,8 +1,7 @@
 ## Response Cache Service / Middleware
 
-- Similar to Spatie's Response Cache but will minify the html before caching. (see related service)
+- Similar to Spatie's Response Cache.
 - Able to prime the cache via queued jobs.
-- Does not serialize anything.
 
 #### Usage: 
 ```php
