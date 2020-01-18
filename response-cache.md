@@ -193,7 +193,7 @@ use Laravel\Telescope\Telescope;
 use Illuminate\Bus\Queueable;
 use Illuminate\Http\Request;
 
-class PrimeCacheForPages implements ShouldQueue
+class PrimeCacheForPage implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -223,7 +223,7 @@ class PrimeCacheForPages implements ShouldQueue
 
 namespace Tests\Unit;
 
-use App\Jobs\PrimeCacheForPages;
+use App\Jobs\PrimeCacheForPage;
 use App\Services\ResponseCache;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
@@ -264,14 +264,14 @@ class ResponseCacheTest extends TestCase
             ->assertHeaderMissing('X-Cached')
             ->assertOk();
 
-        PrimeCacheForPages::dispatchNow('services');
+        PrimeCacheForPage::dispatchNow('services');
 
         $this
             ->get(url('/services/'))
             ->assertHeader('X-Cached')
             ->assertOk();
 
-        PrimeCacheForPages::dispatchNow('about-us');
+        PrimeCacheForPage::dispatchNow('about-us');
 
         $this
             ->get(url('/about-us/'))
@@ -286,7 +286,7 @@ class ResponseCacheTest extends TestCase
 
         ResponseCache::make()->flushCache();
 
-        PrimeCacheForPages::dispatchNow('services');
+        PrimeCacheForPage::dispatchNow('services');
 
         $this
             ->get(url('/services/'))
@@ -301,7 +301,7 @@ class ResponseCacheTest extends TestCase
             ->assertHeaderMissing('X-Cached')
             ->assertOk();
 
-        PrimeCacheForPages::dispatchNow('services');
+        PrimeCacheForPage::dispatchNow('services');
 
         $this
             ->get(url('/services/'))
