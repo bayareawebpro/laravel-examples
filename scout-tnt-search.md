@@ -77,14 +77,7 @@ public function search(Request $request){
         'keywords' => 'required|string|min:2'
     ]);
 
-    $keywords = $request->get('keywords');
-    $keywords = str_replace('_', ' ', $keywords);
-    $keywords = str_replace('-', ' ', $keywords);
-    $keywords = str_replace('/', ' ', $keywords);
-    $keywords = str_replace('\\', ' ', $keywords);
-    $keywords = str_replace(',', ' ', $keywords);
-    $keywords = str_replace('.', ' ', $keywords);
-    $keywords = str_replace('`', ' ', $keywords);
+    $keywords = preg_replace("/[^A-Za-z0-9\s]/", '', $request->get('keywords'));
 
     return Location::search($keywords)->take(100)->get();
 }
