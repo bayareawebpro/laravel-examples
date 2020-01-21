@@ -7,11 +7,13 @@ Compress and stream a file to your CDN easily.
 
 namespace App\Console\Deployment;
 
-use Illuminate\Console\Command;
 use Illuminate\Http\File as HttpFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
+
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 class DatabaseBackup extends Command
 {
@@ -38,14 +40,6 @@ class DatabaseBackup extends Command
     {
         parent::__construct();
     }
-    /**
-     * Destruct / Delete Archive if Exists
-     * @return void
-     */
-    public function __destruct()
-    {
-        File::delete($this->archivePath());
-    }
 
     /**
      * Execute the console command.
@@ -54,9 +48,69 @@ class DatabaseBackup extends Command
      */
     public function handle()
     {
-        $this->call('telescope:clear');
+        // Run your own database snapshot command.
+        // $this->call('database:snapshot');
         $this->backupSnapshot();
         $this->validateBackups();
+    }
+
+    /**
+     * Delete Archive on Destruct
+     */
+    public function __destruct()
+    {
+        if (File::exists($this->archivePath())) {
+            File::delete($this->archivePath());
+        }
+    }
+
+    /**
+     * Backup the Snapshot Archive.
+     * @return void
+     */
+    protected function backupSnapshot(): void
+    {
+        $disk = Storage::disk(static::CDN_DISK);
+
+        if(!$this->snapshotExists()){
+            $this->error("Snapshot does not exist.");
+            abort(1);
+        }
+
+        if(!$this->makeArchive()){
+            $this->error("Failed to Create Archive.");
+            abort(1);
+        }
+
+        $fileName = $this->archiveFilename();
+        $httpFile = new HttpFile($this->archivePath());
+
+        if (!$disk->putFileAs(static::CDN_PATH, $httpFile, $fileName)) {
+            $this->info("Failed to Upload Archive: $fileName");
+            abort(1);
+        }
+
+        $this->info(<<<TEXT
+        Backup Created: $fileName
+        Backup Size: {$this->getFileSize($httpFile)}
+        Download: {$disk->url($this->remoteUrl($fileName))}
+        TEXT);
+    }
+
+    /**
+     * Validate the Remote Backups & Trim Older than 1 Month.
+     * @return void
+     */
+    protected function validateBackups(): void
+    {
+        $lastMonth = Carbon::now()->subMonth();
+        $disk = Storage::disk(static::CDN_DISK);
+        foreach ($disk->allFiles(static::CDN_PATH) as $path) {
+            if (Carbon::parse($disk->lastModified($path))->lt($lastMonth)) {
+                $this->error("Backup Expired: $path");
+                $disk->delete($path);
+            }
+        }
     }
 
     /**
@@ -65,11 +119,11 @@ class DatabaseBackup extends Command
      */
     protected function makeArchive(): bool
     {
-        $this->info("Creating Archive from Snapshot...");
         $zip = new \ZipArchive();
         if ($zip->open($this->archivePath(), \ZipArchive::CREATE) === TRUE) {
-            $zip->addFile($this->snapshotPath());
-            return $zip->close();
+            if($zip->addFile($this->snapshotPath(),"snapshot.sql") === TRUE){
+                return $zip->close();
+            }
         }
         return false;
     }
@@ -80,7 +134,7 @@ class DatabaseBackup extends Command
      */
     protected function archiveFilename(): string
     {
-        $timestamp = Carbon::now()->toDateString();
+        $timestamp = Str::slug(Carbon::now()->toDateTimeString());
         $environment = config('app.env', 'local');
         return "db-$environment-$timestamp.zip";
     }
@@ -113,59 +167,6 @@ class DatabaseBackup extends Command
     }
 
     /**
-     * Validate the Remote Backups & Trim Older than 1 Month.
-     * @return void
-     */
-    protected function validateBackups(): void
-    {
-        $lastMonth = Carbon::now()->subMonth();
-        $disk = Storage::disk(static::CDN_DISK);
-
-        $this->alert("Validating Backups: {$lastMonth->toDateString()}");
-
-        foreach ($disk->allFiles(static::CDN_PATH) as $path) {
-            if (Carbon::parse($disk->lastModified($path))->lt($lastMonth)) {
-                $this->error("Backup Expired: $path");
-                $disk->delete($path);
-            } else {
-                $this->info("Backup Valid: $path");
-            }
-        }
-    }
-
-    /**
-     * Backup the Snapshot Archive.
-     * @return void
-     */
-    protected function backupSnapshot(): void
-    {
-        $disk = Storage::disk(static::CDN_DISK);
-
-        if(!$this->snapshotExists()){
-            $this->error("Snapshot does not exist.");
-            abort(1);
-        }
-
-        if(!$this->makeArchive()){
-            $this->error("Failed to Create Archive.");
-            abort(1);
-        }
-
-        $fileName = $this->archiveFilename();
-        $httpFile = new HttpFile($this->archivePath());
-
-        if (!$disk->putFileAs(static::CDN_PATH, $httpFile, $fileName)) {
-            $this->info("Failed to Upload Archive: $fileName");
-            abort(1);
-        }
-
-        $this->info("Archive Uploaded Successfully");
-        $this->line(bytesForHumans($httpFile->getSize()));
-
-        $this->line($disk->url($this->remoteUrl($fileName)));
-    }
-
-    /**
      * Get Remote Backup Url
      * @param string $fileName
      * @return string
@@ -173,6 +174,15 @@ class DatabaseBackup extends Command
     protected function remoteUrl(string $fileName): string
     {
         return static::CDN_PATH."/{$fileName}";
+    }
+
+    /**
+     * @param HttpFile $httpFile
+     * @return string
+     */
+    protected function getFileSize(HttpFile $httpFile): string
+    {
+        return bytesForHumans($httpFile->getSize()); // See Helper
     }
 }
 ```
