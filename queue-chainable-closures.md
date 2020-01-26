@@ -1,4 +1,4 @@
-## Chainable Closure (thenCall)
+## Chainable Closure (queueClosures)
 
 Currently Laravel does not support Queued Closures as children of a job chain. This helper method will
 map closures to Serialized "CallQueuedClosure" class instances which allows them to be chained.
@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializableClosure;
  * @param \Closure ...$closures
  * @return array
  */
-function thenCall(...$closures){
+function queueClosures(...$closures){
     return Collection::make($closures)
     ->map(fn(\Closure $closure) => new CallQueuedClosure(new SerializableClosure($closure)))
     ->all();
@@ -25,7 +25,7 @@ function thenCall(...$closures){
 ```php
 $model = Model::create(...);
 
-Task::dispatch($model)->chain(thenCall(
+Task::dispatch($model)->chain(queueClosures(
     function() use ($model){
         $model->update(['processed' => true]);
     },
