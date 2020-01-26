@@ -23,11 +23,11 @@ function thenCall(...$closures){
 #### Usage
 
 ```php
-$model = new Model;
+$model = Model::create(...);
 
 Task::dispatch($model)->chain(thenCall(
     function() use ($model){
-        $model->save();
+        $model->update(['processed' => true]);
     },
     function() use ($model){
         $model->notify(new Notification);
