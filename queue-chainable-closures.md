@@ -1,4 +1,4 @@
-## Chainable Closure (queueClosures)
+## Chainable Closure
 
 Currently Laravel does not support Queued Closures as children of a job chain. This helper method will
 map closures to Serialized "CallQueuedClosure" class instances which allows them to be chained.
