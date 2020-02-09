@@ -3,22 +3,23 @@
 ```php
 use App\Http\Resources\SearchableResource;
 
+//Example Request
 app('request')->merge([
-    'search' => 'test',
-    'sort' => 'asc',
-    'per_page' => 4,
-    'order_by' => 'email',
-    'settings->notify' => true,
-    'settings->digest' => true
+    'search' => 'test',  //Apply Searchable
+    'sort' => 'asc', //Apply Sort
+    'per_page' => 4, //Apply PerPage
+    'order_by' => 'email', //Apply Order
+    'settings->notify' => true, //Apply Filter
+    'city' => 'Los Angeles' //Apply Filter
 ]);
 
-SearchableResource::make(User::query())
-    ->filterable(['settings->notify', 'settings->digest'])
-    ->searchable(['name', 'email'])
+return SearchableResource::make(User::query())
+    ->filterable(['settings->notify','profile:city'])
+    ->searchable(['name', 'email','profile:city'])
+    ->appendable(['computedProp'])
     ->orderBy('email')
     ->sort('desc')
-    ->paginate(20)
-    ->toArray();
+    ->paginate(20);
 ```
 
 ```php
@@ -27,44 +28,50 @@ SearchableResource::make(User::query())
 namespace App\Http\Resources;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
-use Illuminate\Support\Arr;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 
 class SearchableResource implements Responsable, Arrayable, Jsonable
 {
     use ValidatesRequests;
 
-    protected $sort = 'desc';
-    protected $paginate = 12;
-    protected $order_by = 'id';
-    protected $searchable = [];
-    protected $appendable = [];
-    protected $filterable = ['id', 'created_at', 'updated_at'];
-    protected $request;
+    protected Builder $query;
+    protected Request $request;
 
-    public static function validationRules()
+    protected int $paginate = 12;
+    protected string $sort = 'desc';
+    protected string $order_by = 'id';
+
+    protected array $perPageOptions = [4, 8, 12, 16, 24, 30];
+    protected array $orderable = ['id', 'created_at', 'updated_at'];
+    protected array $filterable = ['id', 'created_at', 'updated_at'];
+
+    protected array $hiddenProperties = ['data', 'first_page_url', 'last_page_url', 'next_page_url', 'prev_page_url', 'path'];
+
+    protected array $searchable = [];
+    protected array $appendable = [];
+
+    public function validationRules()
     {
-        return [
-            'search'   => 'sometimes|nullable|string|max:255',
-            'sort_by'  => 'sometimes|string|in:asc,desc',
-            'per_page' => 'sometimes|numeric|in:4,8,16,24',
-            'order_by' => 'sometimes|string|in:id,created_at,updated_at',
-        ];
+        $rules = Collection::make($this->filterable)->mapWithKeys(function ($field) {
+            return [$field => ['sometimes', 'nullable']];
+        });
+        return $rules->merge([
+            'search'   => ['sometimes', 'nullable', 'string'],
+            'sort'     => ['sometimes', 'string', Rule::in(['asc', 'desc'])],
+            'per_page' => ['sometimes', 'string', Rule::in($this->perPageOptions)],
+            'order_by' => ['sometimes', 'string', Rule::in($this->orderable)],
+        ])->toArray();
     }
-
-    /**
-     * @var Builder
-     */
-    protected $query;
 
     public static function make($query): self
     {
@@ -77,21 +84,27 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         $this->query = $query;
     }
 
-    public function filterable($filterable): self
+    public function filterable(array $filterable): self
     {
-        $this->filterable = array_merge($this->filterable, (array)$filterable);
+        $this->filterable = array_merge($this->filterable, $filterable);
         return $this;
     }
 
-    public function appendable($appendable): self
+    public function appendable(array $appendable): self
     {
-        $this->appendable = array_merge($this->appendable, (array)$appendable);
+        $this->appendable = array_merge($this->appendable, $appendable);
         return $this;
     }
 
-    public function searchable($searchable): self
+    public function searchable(array $searchable): self
     {
-        $this->searchable = array_merge($this->searchable, (array)$searchable);
+        $this->searchable = array_merge($this->searchable, $searchable);
+        return $this;
+    }
+
+    public function orderable(array $orderable): self
+    {
+        $this->orderable = array_merge($this->orderable, $orderable);
         return $this;
     }
 
@@ -115,6 +128,8 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
 
     public function toCollection(): Collection
     {
+        $this->validate($this->request ?? request(), $this->validationRules());
+
         $this->applySearchable();
         $this->applyFilterable();
 
@@ -124,7 +139,6 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
         $paginator = $this->query
             ->orderBy($order, $sort)
             ->paginate($this->getPerPage());
-
 
         return Collection::make([
             'resource' => [
@@ -148,7 +162,6 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
     public function toResponse($request): JsonResponse
     {
         $this->request = $request;
-        $this->validate($request, static::validationRules());
         return JsonResponse::create($this->toArray());
     }
 
@@ -165,7 +178,16 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
     protected function applyFilterable(): void
     {
         $this->query->where(function (Builder $query) {
-            $query->where($this->request->only($this->filterable));
+            foreach ($this->filterable as $index => $field) {
+                if ($this->request->filled($field)) {
+                    $keyword = $this->request->get($field);
+                    if (Str::contains($field, ':')) {
+                        $this->buildRelationClause($query, 'where', $field, $keyword);
+                    } else {
+                        $this->buildClause($query, 'where', $field, $keyword);
+                    }
+                }
+            }
         });
     }
 
@@ -173,25 +195,32 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
     {
         if ($this->request->filled('search')) {
             $this->query->where(function (Builder $query) {
+
                 $keyword = $this->request->get('search');
+
                 foreach ($this->searchable as $index => $field) {
                     $clause = $index === 0 ? 'where' : 'orWhere';
                     if (Str::contains($field, ':')) {
-                        $this->buildRelationQuery($query, $clause, $field, $keyword);
-                        return;
+                        $this->buildRelationClause($query, $clause, $field, $keyword);
+                    } else {
+                        $this->buildClause($query, $clause, $field, $keyword);
                     }
-                    throw_unless(
-                        method_exists($query, $clause),
-                        \InvalidArgumentException::class,
-                        "Invalid Clause: $clause"
-                    );
-                    $query->$clause($field, 'like', "%{$keyword}%");
                 }
             });
         }
     }
 
-    protected function buildRelationQuery($query, $clause, $field, $keyword): void
+    protected function buildClause(Builder $query, string $clause, string $field, string $keyword): void
+    {
+        throw_unless(
+            method_exists($query, $clause),
+            \InvalidArgumentException::class,
+            "Invalid Clause: $clause"
+        );
+        $query->$clause($field, 'like', "%{$keyword}%");
+    }
+
+    protected function buildRelationClause(Builder $query, string $clause, string $field, string $keyword): void
     {
         $clause = "{$clause}Has";
         throw_unless(
@@ -220,21 +249,12 @@ class SearchableResource implements Responsable, Arrayable, Jsonable
     protected function getOrderBy(): string
     {
         $value = $this->request->get('order_by', $this->order_by);
-        return (string)(in_array($value, $this->getAllowedFields()) ? $value : $this->order_by);
-    }
-
-    protected function getAllowedFields(): array
-    {
-        return array_merge(
-            $this->searchable,
-            $this->filterable,
-            [$this->order_by]
-        );
+        return (string)(in_array($value, $this->orderable) ? $value : $this->order_by);
     }
 
     protected function formatPaginator(LengthAwarePaginator $paginator): array
     {
-        return array_merge(Arr::except($paginator->toArray(), ['data']), [
+        return array_merge(Arr::except($paginator->toArray(), $this->hiddenProperties), [
             'isFirstPage' => $paginator->currentPage() === 1,
             'isLastPage'  => $paginator->currentPage() === $paginator->lastPage(),
         ]);
