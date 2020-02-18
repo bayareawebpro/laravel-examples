@@ -1,5 +1,9 @@
 ## Searchable JSON Resource
 
+Overly Complicated.  Refactored to allow external query classes:
+https://github.com/bayareawebpro/searchable-resource
+
+
 ```php
 use App\Http\Resources\SearchableResource;
 
