@@ -41,16 +41,21 @@ AppPermissions::all();
 ### AppPermissions Service Class
 
 ```php
+<?php declare(strict_types=1);
+
+namespace App\Services;
+
 use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+
 class AppPermissions{
 
     public static function all(): Collection
     {
         return Collection::make(Gate::policies())
             ->mapWithKeys(function (string $class) {
-                
+
                 $class = new \ReflectionClass($class);
                 $className= Str::plural(str_replace('Policy', '', $class->getShortName()));
                 $classSlug= Str::lower($className);
@@ -65,10 +70,11 @@ class AppPermissions{
 
                 return [$className => $list->values()];
             })
-            ->sort()
             ->merge([
                 'Abilities' => Collection::make(Gate::abilities())->keys()
-            ]);
+            ])
+            ->sort();
     }
+
 }
 ```
