@@ -2,7 +2,7 @@
 
 ```php
 $rendered = Markdown::parse('#Markdown is Great!');
-$rendered = Markdown::load('my/page');
+$rendered = Markdown::load('my/page'); /resources/markdown/my/page.md
 ```
 
 ```php
