@@ -1,7 +1,7 @@
 ## ArrayIsCorrectSizeAndOrder Rule
 
 > Author: @GDanielRG
-
+> Source: https://gist.github.com/GDanielRG/580cc7c402475e1e74c9198bf151aafd
 
 ```php
 [
