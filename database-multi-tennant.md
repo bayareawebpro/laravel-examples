@@ -40,7 +40,7 @@ class Tenant
 
 ```
 
-```
+```php
 /**
  * The application's route middleware groups.
  * @var array
@@ -52,7 +52,7 @@ protected $middlewareGroups = [
 ];
 ```
 
-```
+```php
 Route::domain('{subdomain}.artisan.local')->group(function(){
 	// Tennant Routes
 });
