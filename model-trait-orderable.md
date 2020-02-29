@@ -6,14 +6,14 @@
 
 ## Schema
 
-```
+```php
 $table->bigInteger('order')->default(0);
 $table->string('group')->default(null); //Any type
 ```
 
 ## Model
 
-```
+```php
 <?php namespace App;
 
 use App\Traits\Orderable;
@@ -43,7 +43,7 @@ class Post extends Model
 ```
 
 ## Trait
-```
+```php
 <?php namespace App\Traits;
 
 use Illuminate\Support\Facades\DB;
@@ -164,7 +164,7 @@ trait Orderable
 ```
 
 ## Unit Test
-```
+```php
 <?php
 namespace Tests\Unit;
 
