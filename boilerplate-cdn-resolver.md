@@ -1,6 +1,6 @@
 ## CDN Resolver
 
-```
+```php
 <?php
 declare(strict_types=1);
 
@@ -37,7 +37,7 @@ class CdnResolver
 ```
 
 ## Helper Function
-```
+```php
 /**
  * @param $url
  * @param string $directory
@@ -50,7 +50,7 @@ function cdnUrl($url, $directory = 'media'): string
 ```
 
 ## Filesystem Configuration
-```
+```php
 'disks' => [
        'spaces' => [
            'driver' => 's3',
