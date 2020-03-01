@@ -60,7 +60,7 @@ class TokenController extends Controller
     public function show(ApiToken $token): Response
     {
         return response([
-            'entity' => $token
+            'entity' => $token->loadMissing('tokenable')
         ]);
     }
 
@@ -72,7 +72,7 @@ class TokenController extends Controller
     public function edit(ApiToken $token): Response
     {
         return response([
-            'entity' => $token
+            'entity' => $token->loadMissing('tokenable')
         ]);
     }
 
