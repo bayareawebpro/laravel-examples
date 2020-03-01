@@ -107,7 +107,7 @@ class DatabaseBackup extends Command
         $disk = Storage::disk(static::CDN_DISK);
         foreach ($disk->allFiles(static::CDN_PATH) as $path) {
             if (Carbon::parse($disk->lastModified($path))->lt($lastMonth)) {
-                $this->error("Backup Expired: $path");
+                $this->warn("Backup Expired: $path");
                 $disk->delete($path);
             }
         }
