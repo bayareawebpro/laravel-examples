@@ -1,11 +1,13 @@
-### Laravel AirLock Token CRUD
+# Laravel AirLock Token CRUD
 
+## API Route
 ```php
 Route::group(['middleware' => 'auth:airlock'], function(){
     Route::resource('tokens','TokenController');
 });
 ```
 
+## TokenController
 ```php
 
 <?php
@@ -133,7 +135,7 @@ class TokenController extends Controller
 }
 ```
 
-### Token Model
+## Token Model
 ```php
 <?php
 namespace App\Models;
@@ -184,7 +186,7 @@ class ApiToken extends PersonalAccessToken
 }
 ```
 
-### Policy
+## Policy
 ```php
 <?php
 namespace App\Policies;
