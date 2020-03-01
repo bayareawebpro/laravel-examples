@@ -148,11 +148,7 @@ class ApiToken extends PersonalAccessToken
 {
     public $table = 'personal_access_tokens';
 
-    /**
-     * The validation rules for an entity.
-     * @return array
-     */
-    public static function validationRules(): array
+    public static function validationRules(?User $user = null): array
     {
         return [
             'name'        => 'required|string|max:255',
