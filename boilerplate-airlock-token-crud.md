@@ -205,8 +205,7 @@ class ApiTokenPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isRole('admin')
-            || $user->tokenCan('tokens:viewAny');
+        return $user->tokenCan('tokens:viewAny');
     }
 
     /**
@@ -217,8 +216,7 @@ class ApiTokenPolicy
      */
     public function view(User $user, ApiToken $token): bool
     {
-        return $user->isRole('admin')
-            || ($user->is($token->tokenable) && $user->tokenCan('tokens:view'));
+        return ($user->is($token->tokenable) && $user->tokenCan('tokens:view'));
     }
 
     /**
@@ -228,8 +226,7 @@ class ApiTokenPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isRole('admin')
-            || $user->tokenCan('tokens:create');
+        return $user->tokenCan('tokens:create');
     }
 
     /**
@@ -240,8 +237,7 @@ class ApiTokenPolicy
      */
     public function update(User $user, ApiToken $token): bool
     {
-        return $user->isRole('admin')
-            || ($user->is($token->tokenable) && $user->tokenCan('tokens:update'));
+        return ($user->is($token->tokenable) && $user->tokenCan('tokens:update'));
     }
 
     /**
@@ -252,8 +248,7 @@ class ApiTokenPolicy
      */
     public function delete(User $user, ApiToken $token): bool
     {
-        return $user->isRole('admin')
-            || ($user->is($token->tokenable) && $user->tokenCan('tokens:delete'));
+        return ($user->is($token->tokenable) && $user->tokenCan('tokens:delete'));
     }
 
     /**
@@ -264,8 +259,7 @@ class ApiTokenPolicy
      */
     public function restore(User $user, ApiToken $token): bool
     {
-        return $user->isRole('admin')
-            || ($user->is($token->tokenable) && $user->tokenCan('tokens:restore'));
+        return ($user->is($token->tokenable) && $user->tokenCan('tokens:restore'));
     }
 
     /**
@@ -276,8 +270,7 @@ class ApiTokenPolicy
      */
     public function forceDelete(User $user, ApiToken $token): bool
     {
-        return $user->isRole('admin')
-            || ($user->is($token->tokenable) && $user->tokenCan('tokens:forceDelete'));
+        return ($user->is($token->tokenable) && $user->tokenCan('tokens:forceDelete'));
     }
 }
 ```
