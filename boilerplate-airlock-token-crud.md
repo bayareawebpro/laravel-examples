@@ -155,6 +155,14 @@ class ApiToken extends PersonalAccessToken
             'abilities'   => 'required|array|min:1',
             'abilities.*' => ['string', Rule::in([ 
             // ...AllowedGrants
+            //'tokens:viewAny',
+            //'tokens:view',
+            //'tokens:create',
+            //'tokens:update',
+            //'tokens:delete',
+            //'tokens:forceDelete',
+            //'tokens:restore',
+            //etc...
             ])],
         ];
     }
