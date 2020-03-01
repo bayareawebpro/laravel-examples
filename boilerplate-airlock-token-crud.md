@@ -138,7 +138,6 @@ class TokenController extends Controller
 <?php
 namespace App\Models;
 
-use App\Services\AppPermissions;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
