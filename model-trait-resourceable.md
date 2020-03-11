@@ -1,7 +1,7 @@
 # Resourceable Trait
 
-> Contributor: @christopherarter
-> Refactoring: @bayareawebpro
+- Contributor (via gist): https://github.com/christopherarter
+- Refactoring: https://github.com/bayareawebpro
 
 ### Default namespace guesser: 
 
