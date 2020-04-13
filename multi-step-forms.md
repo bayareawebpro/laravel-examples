@@ -65,7 +65,7 @@ Route::any('/', function(){
     <input
         type="hidden"
         name="form_step"
-        value="{{ session('multistep-form.form_step', 1) }}">
+        value="{{ $form->currentStep() }}">
     @csrf
 
     @switch($form->currentStep())
