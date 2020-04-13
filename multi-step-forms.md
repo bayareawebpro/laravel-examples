@@ -41,26 +41,31 @@ public function submission()
 
 ```php
 Route::any('/', function(){
+    // Render a view with data.
     return MultiStepForm::make('form', [
             'title' => 'MultiStep Form'
         ])
+        // Namespace the session data.
         ->namespaced('my-session-key')
+        // After every step...
+        ->onStep('*', function (MultiStepForm $form) {
+           logger('form', $form->toArray());
+        })
+        // Validate Step 1
         ->addStep(1, [
             'rules' => ['name' => 'required']
         ])
+        // Validate Step 2
         ->addStep(2, [
             'rules' => ['role' => 'required']
         ])
-        ->addStep(3)
-        ->onStep(3, function (MultiStepForm $form) {
+        // Add non-validated step...
+        ->addStep(3)->onStep(3, function (MultiStepForm $form) {
            if($form->request->get('submit') === 'reset'){
                 $form->reset();
            }else{
                return response('OK');
            }
-        })
-        ->onStep('*', function (MultiStepForm $form) {
-           logger('form', $form->toArray());
         });
 })->name('submit');
 ```
