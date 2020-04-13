@@ -50,10 +50,13 @@ Route::any('/', function(){
         ])
         ->addStep(3, []) //No Rules, just reset form state.
         ->onStep(3, function (MultiStepForm $form) {
-            $form->setValue('form_step',1);
-            $form->setValue('name',null);
-            $form->setValue('role',null);
-            return response('OK');
+           if($form->request->get('submit') === 'reset'){
+               $form->setValue('form_step',1);
+               $form->setValue('name',null);
+               $form->setValue('role',null);
+           }else{
+               return response('OK');
+           }
         });
 })->name('submit');
 ```
@@ -91,11 +94,12 @@ Route::any('/', function(){
     @endswitch
 
     @if($form->isStep(3))
-    <button type="submit">Save</button>
-    @else
-    <button type="submit">Continue</button>
-    @endif
-    <hr>
+   <button type="submit" name="submit">Save</button>
+   <button type="submit" name="submit" value="reset">Reset</button>
+   @else
+   <button type="submit">Continue</button>
+   @endif
+   <hr>
 
     {{ $form->toCollection() }}
 </form>
