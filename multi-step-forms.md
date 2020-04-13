@@ -138,8 +138,8 @@ class MultiStepForm implements Responsable, Arrayable
     public Session $session;
     public Collection $steps;
     public Collection $callbacks;
+    protected array $data;
     protected $view;
-    protected $data;
 
     public function __construct(
         Request $request,
