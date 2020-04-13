@@ -1,5 +1,9 @@
 # Multi-step Form Builder
 
+Package Released!
+
+>  https://packagist.org/packages/bayareawebpro/laravel-multistep-forms
+
 ```php
 public function submission()
 {
