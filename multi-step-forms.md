@@ -1,6 +1,6 @@
 # Multi-step Form Builder
 
-You could easily modify this to return views instead of json.
+Will return views or JSON depending on the request.
 
 ```php
 public function submission()
@@ -28,7 +28,7 @@ public function submission()
            'messages' => Household::messages(),
        ])
        ->onStep(4, function(MultiStepForm $form){
-           if(in_array($form->request->get('up_sell'), ['yes'])){
+           if(in_array($form->getValue('up_sell'), ['yes'])){
              ContractResolver::dispatch(
                  UpSellLead::make($form)
              );
@@ -157,10 +157,9 @@ class MultiStepForm implements Responsable
 
     public function toResponse($request = null)
     {
-
         if(!$this->request->isMethod('GET')) {
             $this->handle($request ?? $this->request);
-            if ($this->request->wantsJson()) {
+            if ($this->request->wantsJson() || !$this->view) {
                 return new Response($this->toArray());
             }
             return redirect()->back();
