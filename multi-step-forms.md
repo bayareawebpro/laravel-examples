@@ -53,6 +53,7 @@ Route::any('/', function(){
             $form->setValue('form_step',1);
             $form->setValue('name',null);
             $form->setValue('role',null);
+            return response('OK');
         });
 })->name('submit');
 ```
@@ -145,22 +146,21 @@ class MultiStepForm implements Responsable
 
     protected function handle()
     {
-        $this->validate()
-            ->handleCallbacks()
-            ->nextStep();
-        return $this->toArray();
+        $this->validate();
+        $this->nextStep();
+        return $this->handleCallbacks();
     }
 
     public function toResponse($request = null)
     {
         $this->request = $request ?? $this->request;
-        
+
         if(!$this->request->isMethod('GET')) {
-            $this->handle();
+            $response = $this->handle();
             if ($this->request->wantsJson() || !$this->view) {
-                return new Response($this->toArray());
+                return $response ?? new Response($this->toArray());
             }
-            return redirect()->back();
+            return $response ?? redirect()->back();
         }
         return View::make($this->view, [
             'form' => $this
@@ -237,9 +237,8 @@ class MultiStepForm implements Responsable
     {
         if ($this->callbacks->has($this->currentStep())) {
             $callback = $this->callbacks->get($this->currentStep());
-            $callback($this);
+            return $callback($this);
         }
-        return $this;
     }
 
     protected function validate(): self
