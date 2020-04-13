@@ -118,12 +118,13 @@ use Illuminate\Validation\Rule;
 
 class MultiStepForm implements Responsable
 {
+    static string $namespace = 'multistep-form';
+
     public Request $request;
     public Session $session;
     public Config $config;
     public Collection $steps;
     public Collection $callbacks;
-    static string $namespace = 'multistep-form';
     protected $view;
 
     public function __construct(
@@ -140,9 +141,9 @@ class MultiStepForm implements Responsable
         $this->view = $view;
     }
 
-    public static function make(?string $view = null, $data = []): self
+    public static function make(?string $view = null): self
     {
-        return app(self::class, compact('view', 'data'));
+        return app(self::class, compact('view'));
     }
 
     protected function handle($request = null)
