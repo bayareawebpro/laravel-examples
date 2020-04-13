@@ -60,16 +60,14 @@ Route::any('/', function(){
 
 ### Test View
 ```blade
-
 <form method="post" action="{{ route('submit') }}">
+    @csrf
     <input
         type="hidden"
         name="form_step"
         value="{{ $form->currentStep() }}">
-    @csrf
 
     @switch($form->currentStep())
-
         @case(1)
         <label>Name</label>
         <input
@@ -78,7 +76,6 @@ Route::any('/', function(){
             value="{{ $form->getValue('name') }}">
             {{ $errors->first('name') }}
         @break
-
         @case(2)
         <label>Role</label>
         <input
@@ -87,18 +84,21 @@ Route::any('/', function(){
             value="{{ $form->getValue('role') }}">
             {{ $errors->first('role') }}
         @break
-
         @case(3)
-            Done
+            Name: {{ $form->getValue('name') }}<br>
+            Role: {{ $form->getValue('role') }}<br>
         @break
     @endswitch
 
+    @if($form->isStep(3))
+    <button type="submit">Save</button>
+    @else
     <button type="submit">Continue</button>
+    @endif
     <hr>
 
     {{ $form->toCollection() }}
 </form>
-
 ```
 
 ### Builder Class
