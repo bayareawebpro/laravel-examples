@@ -1,7 +1,5 @@
 # Multi-step Form Builder
 
-Will return views or JSON depending on the request.
-
 ```php
 public function submission()
 {
@@ -41,16 +39,17 @@ public function submission()
 
 ### Test Route
 
+
 ```php
 Route::any('/', function(){
-    return MultiStepForm::make('form')
+    return MultiStepForm::make('form') //View
         ->addStep(1, [
             'rules' => ['name' => 'required']
         ])
         ->addStep(2, [
             'rules' => ['role' => 'required']
         ])
-        ->addStep(3, [])
+        ->addStep(3, []) //No Rules, just reset form state.
         ->onStep(3, function (MultiStepForm $form) {
             $form->setValue('form_step',1);
             $form->setValue('name',null);
