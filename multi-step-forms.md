@@ -111,7 +111,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Session\Store as Session;
-use Illuminate\Config\Repository as Config;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Support\Facades\View;
 use Illuminate\Validation\Rule;
@@ -122,7 +121,6 @@ class MultiStepForm implements Responsable
 
     public Request $request;
     public Session $session;
-    public Config $config;
     public Collection $steps;
     public Collection $callbacks;
     protected $view;
@@ -130,14 +128,12 @@ class MultiStepForm implements Responsable
     public function __construct(
         Request $request,
         Session $session,
-        Config $config,
         string $view = null
     ){
         $this->callbacks = new Collection;
         $this->steps = new Collection;
         $this->request = $request;
         $this->session = $session;
-        $this->config = $config;
         $this->view = $view;
     }
 
