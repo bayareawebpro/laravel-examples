@@ -271,7 +271,8 @@ class MultiStepForm implements Responsable, Arrayable
     protected function save(array $data): self
     {
         $this->session->put(static::$namespace, array_merge(
-            $this->session->get(static::$namespace, []), $data
+            $this->session->get(static::$namespace, []), $data,
+            ['form_step' => $this->currentStep()]
         ));
         $this->session->save();
         return $this;
