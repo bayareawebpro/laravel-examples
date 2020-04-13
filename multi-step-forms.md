@@ -1,5 +1,7 @@
 # Multi-step Form Builder
 
+You could easily modify this to return views instead of json.
+
 ```php
 public function submission()
 {
