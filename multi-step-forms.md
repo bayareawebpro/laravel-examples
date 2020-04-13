@@ -51,9 +51,7 @@ Route::any('/', function(){
         ->addStep(3, []) //No Rules, just reset form state.
         ->onStep(3, function (MultiStepForm $form) {
            if($form->request->get('submit') === 'reset'){
-               $form->setValue('form_step',1);
-               $form->setValue('name',null);
-               $form->setValue('role',null);
+                $form->reset();
            }else{
                return response('OK');
            }
@@ -193,6 +191,14 @@ class MultiStepForm implements Responsable
     public function onStep(int $number, \Closure $closure): self
     {
         $this->callbacks->put($number, $closure);
+        return $this;
+    }
+
+    public function reset($data = []): self
+    {
+        $this->session->put(static::$namespace, array_merge($data, [
+            'form_step' => 1
+        ]));
         return $this;
     }
 
