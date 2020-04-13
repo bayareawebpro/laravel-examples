@@ -41,7 +41,7 @@ public function submission()
 
 ```php
 Route::any('/', function(){
-    return MultiStepForm::make('form', []) //View
+    return MultiStepForm::make('form', ['title' => 'MultiStep Form']) //View
         ->onStep('*', function (MultiStepForm $form) {
            logger('form', $form->toArray());
         })
@@ -63,6 +63,7 @@ Route::any('/', function(){
 
 ### Test View
 ```blade
+{{ $title }}
 <form method="post" action="{{ route('submit') }}">
     @csrf
     <input
@@ -171,7 +172,7 @@ class MultiStepForm implements Responsable, Arrayable
     protected function renderRequest()
     {
         if(is_string($this->view)){
-            return View::make($this->view, ['form' => $this]);
+            return View::make($this->view, array_merge($this->data, ['form' => $this]));
         }
         return new Response($this->toArray());
     }
