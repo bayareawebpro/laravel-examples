@@ -41,10 +41,10 @@ public function submission()
 
 ```php
 Route::any('/', function(){
-    return MultiStepForm::make('form', ['title' => 'MultiStep Form']) //View
-        ->onStep('*', function (MultiStepForm $form) {
-           logger('form', $form->toArray());
-        })
+    return MultiStepForm::make('form', [
+            'title' => 'MultiStep Form'
+        ])
+        ->namespaced('my-session-key')
         ->addStep(1, [
             'rules' => ['name' => 'required']
         ])
@@ -57,6 +57,9 @@ Route::any('/', function(){
            }else{
                return response('OK');
            }
+        })
+        ->onStep('*', function (MultiStepForm $form) {
+           logger('form', $form->toArray());
         });
 })->name('submit');
 ```
