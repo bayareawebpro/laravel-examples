@@ -41,7 +41,10 @@ public function submission()
 
 ```php
 Route::any('/', function(){
-    return MultiStepForm::make('form') //View
+    return MultiStepForm::make('form', []) //View
+        ->onStep('*', function (MultiStepForm $form) {
+           logger('form', $form->toArray());
+        })
         ->addStep(1, [
             'rules' => ['name' => 'required']
         ])
@@ -114,9 +117,10 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\View;
 use Illuminate\Session\Store as Session;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 
-class MultiStepForm implements Responsable
+class MultiStepForm implements Responsable, Arrayable
 {
     static string $namespace = 'multistep-form';
 
@@ -125,10 +129,12 @@ class MultiStepForm implements Responsable
     public Collection $steps;
     public Collection $callbacks;
     protected $view;
+    protected $data;
 
     public function __construct(
         Request $request,
         Session $session,
+        $data = [],
         $view = null
     ){
         $this->callbacks = new Collection;
@@ -136,12 +142,14 @@ class MultiStepForm implements Responsable
         $this->request = $request;
         $this->session = $session;
         $this->view = $view;
+        $this->data = $data;
     }
 
-    public static function make($view = null): self
+    public static function make($view = null, array $data = []): self
     {
         return app(static::class, [
-            'view' => $view
+            'view' => $view,
+            'data' => $data,
         ]);
     }
 
@@ -172,7 +180,10 @@ class MultiStepForm implements Responsable
     {
         $this->validate();
         $this->nextStep();
-        if ($response = $this->handleCallback()) {
+        if ($response = $this->handleCallback('*')) {
+            return $response;
+        }
+        if ($response = $this->handleCallback($this->currentStep())) {
             return $response;
         }
         if (is_string($this->view)) {
@@ -191,15 +202,15 @@ class MultiStepForm implements Responsable
         return Collection::make($this->toArray());
     }
 
-    public function addStep(int $number, array $config = []): self
+    public function addStep(int $step, array $config = []): self
     {
-        $this->steps->put($number, $config);
+        $this->steps->put($step, $config);
         return $this;
     }
 
-    public function onStep(int $number, \Closure $closure): self
+    public function onStep($step, \Closure $closure): self
     {
-        $this->callbacks->put($number, $closure);
+        $this->callbacks->put($step, $closure);
         return $this;
     }
 
@@ -256,10 +267,9 @@ class MultiStepForm implements Responsable
         return $this;
     }
 
-    protected function handleCallback()
+    protected function handleCallback($key)
     {
-        if ($this->callbacks->has($this->currentStep())) {
-            $callback = $this->callbacks->get($this->currentStep());
+        if ($callback = $this->callbacks->get($key)) {
             return $callback($this);
         }
     }
