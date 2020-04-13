@@ -38,6 +38,71 @@ public function submission()
 }
 ```
 
+
+### Test Route
+
+```php
+Route::any('/', function(){
+    return MultiStepForm::make('form')
+        ->addStep(1, [
+            'rules' => ['name' => 'required']
+        ])
+        ->addStep(2, [
+            'rules' => ['role' => 'required']
+        ])
+        ->addStep(3, [])
+        ->onStep(3, function (MultiStepForm $form) {
+            $form->setValue('form_step',1);
+            $form->setValue('name',null);
+            $form->setValue('role',null);
+        });
+})->name('submit');
+```
+
+### Test View
+```blade
+
+<form method="post" action="{{ route('submit') }}">
+    <input
+        type="hidden"
+        name="form_step"
+        value="{{ session('multistep-form.form_step', 1) }}">
+    @csrf
+
+    @switch($form->currentStep())
+
+        @case(1)
+        <label>Name</label>
+        <input
+            type="text"
+            name="name"
+            value="{{ $form->getValue('name') }}">
+            {{ $errors->first('name') }}
+        @break
+
+        @case(2)
+        <label>Role</label>
+        <input
+            type="text"
+            name="role"
+            value="{{ $form->getValue('role') }}">
+            {{ $errors->first('role') }}
+        @break
+
+        @case(3)
+            Done
+        @break
+    @endswitch
+
+    <button type="submit">Continue</button>
+    <hr>
+
+    {{ $form->toCollection() }}
+</form>
+
+```
+
+### Builder Class
 ```php
 <?php declare(strict_types=1);
 
@@ -49,6 +114,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Session\Store as Session;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Contracts\Support\Responsable;
+use Illuminate\Support\Facades\View;
 use Illuminate\Validation\Rule;
 
 class MultiStepForm implements Responsable
@@ -59,36 +125,49 @@ class MultiStepForm implements Responsable
     public Collection $steps;
     public Collection $callbacks;
     static string $namespace = 'multistep-form';
+    protected $view;
 
-    public function __construct(Request $request, Session $session, Config $config)
-    {
+    public function __construct(
+        Request $request,
+        Session $session,
+        Config $config,
+        string $view = null
+    ){
         $this->callbacks = new Collection;
         $this->steps = new Collection;
         $this->request = $request;
         $this->session = $session;
         $this->config = $config;
+        $this->view = $view;
     }
 
-    public static function make(): self
+    public static function make(?string $view = null): self
     {
-        return app(self::class);
+        return app(self::class, compact('view'));
     }
 
     protected function handle($request = null)
     {
         $this->request = $request ?? $this->request;
-        $this
-            ->validate()
-            ->handleCallbacks();
-        //Get data before mutating session state.
-        $data = $this->toArray();
-        $this->nextStep();
-        return $data;
+            $this->validate()
+                ->handleCallbacks()
+                ->nextStep();
+        return $this->toArray();
     }
 
-    public function toResponse($request = null): Response
+    public function toResponse($request = null)
     {
-        return response($this->handle($request ?? $this->request));
+
+        if(!$this->request->isMethod('GET')) {
+            $this->handle($request ?? $this->request);
+            if ($this->request->wantsJson()) {
+                return new Response($this->toArray());
+            }
+            return redirect()->back();
+        }
+        return View::make($this->view, [
+            'form' => $this
+        ]);
     }
 
     public function toArray(): array
@@ -128,6 +207,17 @@ class MultiStepForm implements Responsable
         return (bool)($this->currentStep() === $step);
     }
 
+    public function getValue(string $key, $fallback = null)
+    {
+        return $this->session->get(static::$namespace . ".$key", $fallback);
+    }
+
+    public function setValue(string $key, $value): self
+    {
+        $this->session->put(static::$namespace . ".$key", $value);
+        return $this;
+    }
+
     protected function nextStep(): self
     {
         if (!$this->isStep($this->steps->count())) {
@@ -142,6 +232,7 @@ class MultiStepForm implements Responsable
             $this->session->get(static::$namespace, []),
             $data
         ));
+        $this->session->save();
         return $this;
     }
 
