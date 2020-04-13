@@ -128,7 +128,7 @@ class MultiStepForm implements Responsable
     public function __construct(
         Request $request,
         Session $session,
-        string $view = null
+        $view = null
     ){
         $this->callbacks = new Collection;
         $this->steps = new Collection;
@@ -137,7 +137,7 @@ class MultiStepForm implements Responsable
         $this->view = $view;
     }
 
-    public static function make(?string $view = null): self
+    public static function make($view = null): self
     {
         return app(self::class, [
             'view' => $view
@@ -157,14 +157,17 @@ class MultiStepForm implements Responsable
 
         if(!$this->request->isMethod('GET')) {
             $response = $this->handle();
-            if ($this->request->wantsJson() || !$this->view) {
+            if ($this->request->wantsJson() || !is_string($this->view)) {
                 return $response ?? new Response($this->toArray());
             }
             return $response ?? redirect()->back();
         }
-        return View::make($this->view, [
-            'form' => $this
-        ]);
+        if(is_string($this->view)){
+            return View::make($this->view, [
+                'form' => $this
+            ]);
+        }
+        return new Response($this->toArray());
     }
 
     public function toArray(): array
