@@ -110,11 +110,11 @@ namespace App;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\View;
 use Illuminate\Session\Store as Session;
 use Illuminate\Contracts\Support\Responsable;
-use Illuminate\Support\Facades\View;
-use Illuminate\Validation\Rule;
 
 class MultiStepForm implements Responsable
 {
@@ -145,28 +145,38 @@ class MultiStepForm implements Responsable
         ]);
     }
 
-    protected function handle()
+    public function namespaced(string $namespace): self
     {
-        $this->validate();
-        $this->nextStep();
-        return $this->handleCallbacks();
+        static::$namespace = $namespace;
+        return $this;
     }
 
     public function toResponse($request = null)
     {
         $this->request = $request ?? $this->request;
-
-        if(!$this->request->isMethod('GET')) {
-            $response = $this->handle();
-            if ($this->request->wantsJson() || !is_string($this->view)) {
-                return $response ?? new Response($this->toArray());
-            }
-            return $response ?? redirect()->back();
+        if($this->request->isMethod('GET')) {
+            return $this->renderRequest();
         }
+        return $this->handleRequest();
+    }
+
+    protected function renderRequest()
+    {
         if(is_string($this->view)){
-            return View::make($this->view, [
-                'form' => $this
-            ]);
+            return View::make($this->view, ['form' => $this]);
+        }
+        return new Response($this->toArray());
+    }
+
+    protected function handleRequest()
+    {
+        $this->validate();
+        $this->nextStep();
+        if ($response = $this->handleCallback()) {
+            return $response;
+        }
+        if (is_string($this->view)) {
+            return redirect()->back();
         }
         return new Response($this->toArray());
     }
@@ -181,9 +191,9 @@ class MultiStepForm implements Responsable
         return Collection::make($this->toArray());
     }
 
-    public function addStep(int $number, array $attrs): self
+    public function addStep(int $number, array $config = []): self
     {
-        $this->steps->put($number, $attrs);
+        $this->steps->put($number, $config);
         return $this;
     }
 
@@ -203,7 +213,9 @@ class MultiStepForm implements Responsable
 
     public function currentStep(): int
     {
-        return (int)$this->request->get('form_step', $this->session->get(static::$namespace . ".form_step", 1));
+        return (int)$this->request->get('form_step',
+            $this->session->get(static::$namespace . ".form_step", 1)
+        );
     }
 
     public function stepConfig(int $step = 1): Collection
@@ -238,14 +250,13 @@ class MultiStepForm implements Responsable
     protected function save(array $data): self
     {
         $this->session->put(static::$namespace, array_merge(
-            $this->session->get(static::$namespace, []),
-            $data
+            $this->session->get(static::$namespace, []), $data
         ));
         $this->session->save();
         return $this;
     }
 
-    protected function handleCallbacks()
+    protected function handleCallback()
     {
         if ($this->callbacks->has($this->currentStep())) {
             $callback = $this->callbacks->get($this->currentStep());
