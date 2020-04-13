@@ -140,9 +140,9 @@ class MultiStepForm implements Responsable
         $this->view = $view;
     }
 
-    public static function make(?string $view = null): self
+    public static function make(?string $view = null, $data = []): self
     {
-        return app(self::class, compact('view'));
+        return app(self::class, compact('view', 'data'));
     }
 
     protected function handle($request = null)
