@@ -51,7 +51,8 @@ Route::any('/', function(){
         ->addStep(2, [
             'rules' => ['role' => 'required']
         ])
-        ->addStep(3)->onStep(3, function (MultiStepForm $form) {
+        ->addStep(3)
+        ->onStep(3, function (MultiStepForm $form) {
            if($form->request->get('submit') === 'reset'){
                 $form->reset();
            }else{
