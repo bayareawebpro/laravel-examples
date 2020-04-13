@@ -39,7 +39,6 @@ public function submission()
 
 ### Test Route
 
-
 ```php
 Route::any('/', function(){
     return MultiStepForm::make('form') //View
@@ -139,22 +138,25 @@ class MultiStepForm implements Responsable
 
     public static function make(?string $view = null): self
     {
-        return app(self::class, compact('view'));
+        return app(self::class, [
+            'view' => $view
+        ]);
     }
 
-    protected function handle($request = null)
+    protected function handle()
     {
-        $this->request = $request ?? $this->request;
-            $this->validate()
-                ->handleCallbacks()
-                ->nextStep();
+        $this->validate()
+            ->handleCallbacks()
+            ->nextStep();
         return $this->toArray();
     }
 
     public function toResponse($request = null)
     {
+        $this->request = $request ?? $this->request;
+        
         if(!$this->request->isMethod('GET')) {
-            $this->handle($request ?? $this->request);
+            $this->handle();
             if ($this->request->wantsJson() || !$this->view) {
                 return new Response($this->toArray());
             }
