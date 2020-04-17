@@ -59,8 +59,7 @@ jobs:
           fetch-depth: 1
 
       - name: Configure Environment
-        run: |
-          cp .env.ci .env
+        run: cp .env.ci .env
 
       - name: Cache Composer
         uses: actions/cache@v1
@@ -74,7 +73,7 @@ jobs:
           php artisan key:generate
 
       - name: Create Sqlite Database
-        run: touch database/testing.sqlite
+        run: touch ./database/testing.sqlite
 
       - name: Run PHP Analysis
         run: ./vendor/bin/phpstan analyse
@@ -100,12 +99,10 @@ jobs:
         run: npm run production
 
       - name: Install Chrome Driver
-        run: |
-          php artisan dusk:chrome-driver `/opt/google/chrome/chrome --version | cut -d " " -f3 | cut -d "." -f1`
+        run: php artisan dusk:chrome-driver `/opt/google/chrome/chrome --version | cut -d " " -f3 | cut -d "." -f1`
 
       - name: Start Chrome Driver
-        run: |
-          ./vendor/laravel/dusk/bin/chromedriver-linux &
+        run: ./vendor/laravel/dusk/bin/chromedriver-linux &
 
       - name: Serve Application
         run: php artisan serve &
