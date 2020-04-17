@@ -1,12 +1,16 @@
-Add to `.github/workflows/test.yaml`
+# GitHub Actions Workflow for Laravel
 
-Badges
+### Add Badge
 ```
 ![](https://github.com/my-account/my-repo/workflows/my-workflow-name/badge.svg)
-![](https://img.shields.io/badge/License-MIT-success.svg)
-![](https://img.shields.io/badge/Version-1.0-blue.svg)
 ```
+
+---
+
 ## Package Workflow
+
+Add to `.github/workflows/ci.yaml`
+
 ```
 name: tests
 on: [push, pull_request]
@@ -20,16 +24,17 @@ jobs:
       - name: Install Composer Dependencies
         run: composer install --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
       - name: Lint
-        run: php7.3 vendor/bin/phpstan analyse
+        run: php ./vendor/bin/phpstan analyse
       - name: Testsuite
-        run: php7.3 vendor/bin/phpunit
+        run: php ./vendor/bin/phpunit
 ```
 
-## App Workflow
+## Full-stack APP Workflow
 
-> Comment Out --disable-gpu if your app uses animations.
+Add to `.github/workflows/ci.yaml`
+
 ```
-name: ci
+name: tests
 on:
   push:
     paths-ignore:
@@ -46,6 +51,8 @@ on:
 jobs:
   CI:
     runs-on: ubuntu-latest
+    # container:
+    #   image: your/laravel-docker
     steps:
       - uses: actions/checkout@v1
         with:
@@ -67,13 +74,13 @@ jobs:
           php artisan key:generate
 
       - name: Create Sqlite Database
-        run: php artisan make:sqlite
+        run: touch database/testing.sqlite
 
       - name: Run PHP Analysis
-        run: composer lint
+        run: ./vendor/bin/phpstan analyse
 
       - name: Run PHP Tests
-        run: composer test-unit
+        run: php ./vendor/bin/phpunit
 
       - name: Cache NPM
         uses: actions/cache@v1
@@ -122,16 +129,32 @@ jobs:
 ```
 
 
-## Docker Workflow
-- If you require custom extensions...
-```
-name: tests
-on: [push, pull_request]
-jobs:
-  CI:
-    runs-on: ubuntu-latest
-    container:
-      image: your/laravel-docker
-    steps:
-     ...
+### Dusk Required Options
+
+- `APP_URL=http://127.0.0.1:8000`
+- `SANCTUM_DOMAIN=127.0.0.1`
+
+
+- Constant: `ChromeOptions::CAPABILITY`
+- Disable: `--disable-gpu`
+
+```php
+/**
+ * Create the RemoteWebDriver instance.
+ * @return \Facebook\WebDriver\Remote\RemoteWebDriver
+ */
+protected function driver()
+{
+    $options = (new ChromeOptions)->addArguments([
+        //'--disable-gpu', Chrome doesn't load SPAs.
+        '--headless',
+        '--window-size=1920,1080',
+    ]);
+
+    return RemoteWebDriver::create(
+        'http://localhost:9515', DesiredCapabilities::chrome()->setCapability(
+            ChromeOptions::CAPABILITY, $options
+        )
+    );
+}
 ```
