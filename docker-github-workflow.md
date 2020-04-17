@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: Install Composer Dependencies
-        run: composer install --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+        run: composer install --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --optimize-autoloader
       - name: Lint
         run: php ./vendor/bin/phpstan analyse
       - name: Testsuite
@@ -70,7 +70,7 @@ jobs:
 
       - name: Composer Dependencies
         run: |
-          composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+          composer install --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --optimize-autoloader
           php artisan key:generate
 
       - name: Create Sqlite Database
