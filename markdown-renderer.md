@@ -25,7 +25,7 @@ class Markdown {
         return with(new GithubFlavoredMarkdownConverter(static::$options))->convertToHtml($markdown);
     }
 
-    public static function load(string $path): string
+    public static function load(string $path)
     {
         $path = resource_path("markdown/$path.md");
 
