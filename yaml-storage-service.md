@@ -100,10 +100,11 @@ class Yaml
     public function load(): self
     {
         if(Storage::disk($this->disk)->exists($this->filepath)){
-            $this->data = YamlParser::parse(
+            $data = YamlParser::parse(
                 Storage::disk($this->disk)->get($this->filepath),
                 YamlParser::PARSE_OBJECT_FOR_MAP
             );
+            $this->data = is_array($data) ? $data : [];
         }
         return $this;
     }
