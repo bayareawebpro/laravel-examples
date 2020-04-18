@@ -9,9 +9,7 @@ for setting up tagger classes that tuck away your logic and tag resolution metho
 namespace App\Providers;
 
 use App\Telescope\LeadTagger;
-
 use Laravel\Telescope\Telescope;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Telescope\IncomingEntry;
 use Laravel\Telescope\TelescopeApplicationServiceProvider;
