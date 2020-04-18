@@ -1,9 +1,11 @@
-```
+```php
 <?php declare(strict_types=1);
+
 namespace App\Fluent;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Contracts\Support\Responsable;
+
 class ApiResponse implements Responsable
 {
     protected $response;
