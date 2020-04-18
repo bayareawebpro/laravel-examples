@@ -30,7 +30,7 @@ $groups = $yaml->collect('groups');
 
 $yaml->set('groups',
     $groups->reject(function($group){
-        return $group === 'me';
+        return $group === 'me/me';
     })
 );
 
