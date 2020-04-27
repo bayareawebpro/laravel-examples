@@ -2,6 +2,9 @@
 
 A Vue Mixin for mapping Nova Resource Responses to normal objects / arrays.
 
+> Some Nova Routes return resource responses (index, show), others like `create` do not.
+> The included `uploadResource` method doesn't need to be mapped for example.
+
 #### Nova Resource Response Structure:
 ```json
 [
