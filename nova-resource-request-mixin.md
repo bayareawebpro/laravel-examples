@@ -102,7 +102,7 @@ export default {
          * Fetch Resource Entity
          * @param resourceKey {String}
          * @param id {String|Number}
-         * @return {Promise<Array>}
+         * @return {Promise<Object>}
          */
         async fetchResourceEntity(resourceKey, id){
             return await Nova.request()
@@ -126,7 +126,7 @@ export default {
          * Fetch Resource Entity as Object
          * @param resourceKey {String}
          * @param params {Object}
-         * @return {Promise<Array>}
+         * @return {Promise<Object>}
          */
         async uploadResource(resourceKey, params){
             const data = new FormData
