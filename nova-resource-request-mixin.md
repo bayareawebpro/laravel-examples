@@ -2,6 +2,55 @@
 
 A Vue Mixin for using the Nova Resource Routes for other purposes by mapping Resource Responses to normal objects / arrays.
 
+#### Nova Resource Response Structure:
+```json
+[
+    {
+       "resource":{
+          "fields":[
+             {"attribute":"id", "value":1},
+             {"attribute":"size", "value":4312},
+             {
+                "attribute":"file",
+                "value":"screen-shot1.png",
+                "thumbnailUrl":"http:\/\/laravel7-test.test\/storage\/media\/screen-shot1.png",
+                "previewUrl":"http:\/\/laravel7-test.test\/storage\/media\/screen-shot1.png"
+             }
+          ]
+       }
+    },
+    {
+       "resource":{
+          "fields":[
+             {"attribute":"id", "value":2},
+             {"attribute":"size", "value":4312},
+             {
+                "attribute":"file",
+                "value":"screen-shot2.png",
+                "thumbnailUrl":"http:\/\/laravel7-test.test\/storage\/media\/screen-shot2.png",
+                "previewUrl":"http:\/\/laravel7-test.test\/storage\/media\/screen-shot2.png"
+             }
+          ]
+       }
+    }
+]
+```
+
+#### Mapped to Normal Object
+```json
+{
+"id": 1,
+"size": 4312,
+"file": "screen-shot.png",
+"thumbnailUrl":"http:\/\/laravel7-test.test\/storage\/media\/screen-shot.png",
+"previewUrl":"http:\/\/laravel7-test.test\/storage\/media\/screen-shot.png",
+}
+```
+
+---
+
+## Usage
+
 ```javascript
 this.fetchResourceEntity('media',id).then((entity)=>{
     this.entity = entity
