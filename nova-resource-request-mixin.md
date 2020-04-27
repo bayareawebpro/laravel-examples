@@ -1,6 +1,6 @@
 ## Laravel Nova Resource Request Helper Vue Mixin
 
-A Vue Mixin for using the Nova Resource Routes for other purposes by mapping Resource Responses to normal objects / arrays.
+A Vue Mixin for mapping Nova Resource Responses to normal objects / arrays.
 
 #### Nova Resource Response Structure:
 ```json
