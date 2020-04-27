@@ -46,9 +46,6 @@ export default {
                 }else if(item.hasOwnProperty('previewUrl')){
                     obj.url = item.previewUrl
                 }
-                if(item.hasOwnProperty('meta')){
-                    obj.meta = item.meta
-                }
                 return obj
             }, {})
         },
