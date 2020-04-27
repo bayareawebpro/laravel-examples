@@ -98,6 +98,9 @@ export default {
                 }else if(item.hasOwnProperty('previewUrl')){
                     obj.url = item.previewUrl
                 }
+                if(item.hasOwnProperty('meta')){
+                    obj.meta = item.meta
+                }
                 return obj
             }, {})
         },
@@ -105,7 +108,7 @@ export default {
          * Fetch Resource Entity
          * @param resourceKey {String}
          * @param id {String|Number}
-         * @return {Promise<Object>}
+         * @return {Promise<Array>}
          */
         async fetchResourceEntity(resourceKey, id){
             return await Nova.request()
@@ -129,14 +132,14 @@ export default {
          * Fetch Resource Entity as Object
          * @param resourceKey {String}
          * @param params {Object}
-         * @return {Promise<Object>}
+         * @return {Promise<Array>}
          */
         async uploadResource(resourceKey, params){
             const data = new FormData
             Object.entries(params).forEach(([key,value])=>data.append(key, value))
             return await Nova.request()
                 .post(`/nova-api/${resourceKey}`,data)
-                .then(({data})=>data)
+                .then(({data})=>data.resource)
                 .catch(this.handleResourceError)
         },
         /**
