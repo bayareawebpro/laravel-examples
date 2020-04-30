@@ -1,6 +1,6 @@
 ## Implementation
 
-```
+```php
 
 $this->app->singleton('url', function (Application $app) {
 
@@ -30,7 +30,7 @@ $this->app->singleton('url', function (Application $app) {
 ```
 
 ## URL Generator Replacement
-```
+```php
 <?php
 namespace App\Services;
 use Illuminate\Support\Str;
@@ -116,7 +116,7 @@ class RedirectToTrailingSlash
 ```
 
 ## Test Case Override:
-```
+```php
 /**
  * Turn the given URI into a fully qualified URL.
  * @param  string  $uri
