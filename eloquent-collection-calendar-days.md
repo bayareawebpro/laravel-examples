@@ -24,7 +24,7 @@ $length = now()->daysInMonth;
 
 // Calendar Query
 $pages = App\Model::query()
-    ->whereBetween('updated_at', [$start, $end])
+    ->whereBetween('created_at', [$start, $end])
     ->take(10)
     ->get();
 
@@ -34,7 +34,7 @@ Collection::make(range(1, $length))->map(function ($days) use ($pages) {
     return [
         'date' => $now->format('m/d/Y'),
         'entries' => $pages->filter(function ($model) use ($now) {
-            return optional($model->updated_at)->isSameDay($now);
+            return optional($model->created_at)->isSameDay($now);
         })
     ];
 });
