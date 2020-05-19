@@ -2,9 +2,16 @@
 
 ## Usage
 
-```
+```php
+<?php
+
 $result = Geocoder::using('chain')
 	->geocode("$lat, $lon")
+	->get()
+	->first();
+
+$result = Geocoder::using('geoip2')
+	->geocode($ipAddress)
 	->get()
 	->first();
 ```
