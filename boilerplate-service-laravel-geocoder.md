@@ -100,9 +100,6 @@ return [
     | instance of the required reader class.
     | Please consult the official Geocode documentation for more info.
     | https://github.com/geocoder-php/geoip2-provider
-	|-----------------------------------------------------------------------
-	| GeoIp2 Database Reader
-	|-----------------------------------------------------------------------
 	*/
     'reader'    => [
         \GeoIp2\Database\Reader::class => [
@@ -110,5 +107,4 @@ return [
         ],
     ],
 ];
-
 ```
