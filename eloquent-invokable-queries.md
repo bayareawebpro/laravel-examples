@@ -3,6 +3,7 @@
 #### Usage
 
 ```php
+<?php
 
 // Array Spread / Merge Validation Rules
 $request->validate([

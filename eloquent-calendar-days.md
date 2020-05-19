@@ -3,6 +3,7 @@
 Build a calendar of entries for every day in the current month.
 
 ```php
+<?php
 [
     [
      "date" => "05/01/2020",
@@ -17,6 +18,7 @@ Build a calendar of entries for every day in the current month.
 
 
 ```php
+<?php
 // Calendar Details
 $end = now()->endOfMonth();
 $start = now()->startOfMonth();
