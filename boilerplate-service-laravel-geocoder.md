@@ -17,10 +17,11 @@ $result = Geocoder::using('geoip2')
 ```
 
 ## Dependencies
-- toin0u/geocoder-laravel
-- geocoder-php/geoip2-provider
-- php-http/guzzle6-adapter
-- guzzlehttp/guzzle
+- GeoIp2 Database: https://dev.maxmind.com/geoip/geoip2/geolite2/
+- Package: toin0u/geocoder-laravel
+- Package: geocoder-php/geoip2-provider
+- Package: php-http/guzzle6-adapter
+- Package: guzzlehttp/guzzle
 
       
 ## Config
