@@ -17,7 +17,7 @@ $result = Geocoder::using('chain')
 
       
 ## Config
-```
+```php
 <?php
 use Geocoder\Provider\Chain\Chain;
 use Geocoder\Provider\GeoIP2\GeoIP2;
