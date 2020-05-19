@@ -27,7 +27,6 @@ class Vue implements Responsable
      * @param JsonResponse $response
      * @param Request $request
      * @param array $data
-     * @return $this
      */
     public function __construct(JsonResponse $response, Request $request, array $data = [])
     {
@@ -47,8 +46,8 @@ class Vue implements Responsable
     
 
     /**
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param mixed $value
      * @return $this
      */
     public function commit(string $key, $value)
@@ -58,8 +57,8 @@ class Vue implements Responsable
     }
     
     /**
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param mixed $value
      * @return $this
      */
     public function emit(string $key, $value)
@@ -69,7 +68,7 @@ class Vue implements Responsable
     }
     
     /**
-     * @param $value
+     * @param string $value
      * @return $this
      */
     public function message(string $value)
