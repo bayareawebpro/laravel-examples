@@ -3,7 +3,7 @@
 
 Will call a possible filter method for every property.
 
-```
+```php
 <?php declare(strict_types=1);
 
 namespace App\Http\Requests\Traits;
@@ -30,7 +30,7 @@ trait Filterable{
 ```
 
 
-```
+```php
 <?php
 
 namespace App\Http\Requests;
