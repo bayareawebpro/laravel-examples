@@ -1,127 +1,21 @@
+# Larave GeoCoder (GeoIP)
+
 ## Usage
 
 ```
-use App\Services\GeocodeApi;
-$result = GeocodeApi::make()->geocode($searchTerm);
-$result = GeocodeApi::make()->getCountryCode($fallback = 'US');
-$result = app(GeocodeApi::class)->getCountryCode($fallback = 'US');
+$result = Geocoder::using('chain')
+	->geocode("$lat, $lon")
+	->get()
+	->first();
 ```
 
 ## Dependencies
 - toin0u/geocoder-laravel
+- geocoder-php/geoip2-provider
 - php-http/guzzle6-adapter
 - guzzlehttp/guzzle
-- geocoder-php/geoip2-provider
-- https://github.com/bayareawebpro/laravel-examples/blob/master/collections-recursive.md
-        
-## Service
-```
-<?php declare(strict_types=1);
 
-namespace App\Services;
-
-use GeoIp2\Database\Reader;
-use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
-use Illuminate\Config\Repository as Config;
-use Geocoder\Provider\GoogleMaps\Model\GoogleAddress;
-
-class GeocodeApi
-{
-    protected $request, $cache, $config;
-
-    /**
-     * GeocodeApi constructor.
-     * @param Request $request
-     * @param Config $config
-     * @throws \Exception
-     */
-    public function __construct(Request $request, Config $config){
-        $this->request = $request;
-        $config->set('geocoder.reader', new Reader(database_path('maxmind/GeoLite2-City.mmdb')));
-    }
-
-    /**
-     * Make new instance of self.
-     * @return GeocodeApi
-     */
-    public static function make(): GeocodeApi
-    {
-        return app(self::class);
-    }
-
-    /**
-     * Geocode String using Service
-     * @param string $searchTerm
-     * @param string $service
-     * @return array|null
-     */
-    public function geocode($searchTerm = 'Santa Cruz, CA', $service = 'chain')
-    {
-        $result = app('geocoder')
-            ->using($service)
-            ->geocode($searchTerm)
-            ->get()
-            ->first();
-
-        /** @var $result GoogleAddress */
-        if(!is_null($result)) {
-
-            /** @var $location Collection */
-            $location = Collection::make($result->toArray())->recursive();
-
-            $address = new Collection();
-            $address->put('city',  $location->get('locality') ?? $location->get('subLocality'));
-            $address->put('county', null);
-            $address->put('state', null);
-            $address->put('zip',  $location->get('postalCode', null));
-            $address->put('latitude',  $location->get('latitude', null));
-            $address->put('longitude',  $location->get('longitude', null));
-            $address->put('country',  $location->get('country', null));
-            $address->put('iso',  $location->get('countryCode', null));
-
-            if($levels = $location->get('adminLevels', false)){
-                if($county = $levels->where('level', 2)->first()){
-                    $address->put('county', data_get($county, 'name'));
-                }
-                if($state = $levels->where('level', 1)->first()){
-                    $address->put('state', data_get($state, 'name'));
-                    $address->put('state_code', data_get($state, 'code'));
-                }
-            }
-
-            $address = $address->reject(function($value){
-                return is_null($value);
-            });
-            return $address->toArray();
-        }
-        return $result;
-    }
-
-    /**
-     * Get Country Code from IP Address
-     * @param null $ipAddress
-     * @param string $fallback
-     * @return mixed|string
-     */
-    public function getCountryCode($ipAddress = null, $fallback = 'US')
-    {
-        if (is_null($ipAddress)) {
-            $ipAddress = $this->request->ip();
-        }
-        //Get the result from the API Request.
-        if (!empty($ipAddress)) {
-            $result = $this->geocode($ipAddress, 'geoip2');
-            if ($result) {
-                return data_get($result, 'iso', $fallback);
-            }
-        }
-        return $fallback;
-    }
-}
-
-```
-
+      
 ## Config
 ```
 <?php
@@ -190,7 +84,7 @@ return [
 
     /*
     |---------------------------------------------------------------------------
-    | Reader (Set in App Service Provider upon Boot.)
+    | Database Reader
     |---------------------------------------------------------------------------
     | You can specify a reader for specific providers, like GeoIp2, which
     | connect to a local file-database. The reader should be set to an
@@ -198,10 +92,13 @@ return [
     | Please consult the official Geocode documentation for more info.
     | https://github.com/geocoder-php/geoip2-provider
 	|-----------------------------------------------------------------------
-	| MaxMind Database Reader
+	| GeoIp2 Database Reader
 	|-----------------------------------------------------------------------
-	| Default: null
 	*/
-    'reader' => null, //Set by service class when used, cannot serialize instance.
+    'reader' =>  [
+        \GeoIp2\Database\Reader::class => [
+            database_path('maxmind/GeoLite2-City.mmdb')
+        ]
+    ],
 ];
 ```
