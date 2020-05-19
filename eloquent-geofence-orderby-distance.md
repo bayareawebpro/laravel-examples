@@ -1,5 +1,4 @@
-# Closest To
-
+# Eloquent GeoFence - Order by Distance
 
 
 ## Model Scope Usage
