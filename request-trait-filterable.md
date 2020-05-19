@@ -3,7 +3,7 @@
 
 Will call a possible filter method for every property.
 
-```
+```php
 <?php declare(strict_types=1);
 
 namespace App\Http\Requests\Traits;
@@ -17,7 +17,7 @@ trait Filterable{
      */
     public function validated()
     {
-        return Collection::make(parent::validated())->map(function ($value, $key) {
+        return Collection::make($this->validated())->map(function ($value, $key) {
             $filter = "filter" . Str::studly($key);
             if (method_exists($this, $filter)) {
                 return $this->{$filter}($value);
@@ -30,7 +30,7 @@ trait Filterable{
 ```
 
 
-```
+```php
 <?php
 
 namespace App\Http\Requests;
