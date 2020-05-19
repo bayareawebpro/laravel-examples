@@ -26,12 +26,14 @@ $result = Geocoder::using('geoip2')
 ## Config
 ```php
 <?php
+
 use Geocoder\Provider\Chain\Chain;
 use Geocoder\Provider\GeoIP2\GeoIP2;
 use Geocoder\Provider\GeoPlugin\GeoPlugin;
 use Geocoder\Provider\GoogleMaps\GoogleMaps;
+
 return [
-    'cache' => [
+    'cache'     => [
 
         /*
         |-----------------------------------------------------------------------
@@ -41,7 +43,7 @@ return [
         | the default cache store specified in /config/cache.php file.
         | Default: null
         */
-        'store' => 'file',
+        'store'    => 'file',
 
         /*
         |-----------------------------------------------------------------------
@@ -72,7 +74,7 @@ return [
     */
     'providers' => [
         GeoIP2::class => [],
-        Chain::class => [
+        Chain::class  => [
             GoogleMaps::class => ['en-US', env('GOOGLE_SECRET')],
         ],
         //GeoPlugin::class  => [],
@@ -87,7 +89,7 @@ return [
     | https://github.com/geocoder-php/Geocoder#usage
     | Default: Client::class (FQCN for CURL adapter)
     */
-    'adapter'  => Http\Adapter\Guzzle6\Client::class,
+    'adapter'   => Http\Adapter\Guzzle6\Client::class,
 
     /*
     |---------------------------------------------------------------------------
@@ -102,10 +104,11 @@ return [
 	| GeoIp2 Database Reader
 	|-----------------------------------------------------------------------
 	*/
-    'reader' =>  [
+    'reader'    => [
         \GeoIp2\Database\Reader::class => [
-            database_path('maxmind/GeoLite2-City.mmdb')
-        ]
+            database_path('maxmind/GeoLite2-City.mmdb'),
+        ],
     ],
 ];
+
 ```
