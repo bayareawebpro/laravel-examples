@@ -1,6 +1,10 @@
 ```php
+<?php
 
-return V
+return Vue::make([...])
+    ->message('Welcome back.')
+    ->emit('user:login', true)
+    ->commit('user', $user)
 ```
 
 
@@ -13,7 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Contracts\Support\Responsable;
 
-class VueResponse implements Responsable
+class Vue implements Responsable
 {
     protected JsonResponse $response;
     protected Request $request;
@@ -58,7 +62,7 @@ class VueResponse implements Responsable
      * @param $value
      * @return $this
      */
-    public function event(string $key, $value)
+    public function emit(string $key, $value)
     {
         data_set($this->data, "events.{$key}", $value);
         return $this;
