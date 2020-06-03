@@ -1,4 +1,4 @@
-# Magento Style 
+# Magento Style Routing
 Path-based lazy controller routing.  lol.
 
 ```php
