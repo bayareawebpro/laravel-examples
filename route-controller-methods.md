@@ -9,7 +9,7 @@ Route::any("{controller}/{method}", "BaseController@callController");
 
 ```php
 <?php
-public function callController($controller, $method)
+public function callController(string $controller, string $method)
 {
   try{
     return app()->call("{$controller}@{$method}")
