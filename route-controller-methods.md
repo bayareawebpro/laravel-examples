@@ -12,7 +12,7 @@ Route::any("{controller}/{method}", "BaseController@callController");
 public function callController(string $controller, string $method)
 {
   try{
-    return app()->call("{$controller}@{$method}")
+    return app()->call("{$controller}@{$method}");
   }catch(\Throwable $e){
     abort(404);
   }
