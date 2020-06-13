@@ -2,8 +2,8 @@
 
 The Symphony Process Component is included with Laravel, here's an example of executing a command.
 
-```
-
+```php
+<?php
 $process = Process::fromShellCommandline(
     "ssh -C forge@hostname \"mysqldump staging\" | mysql staging"
 );
