@@ -22,7 +22,7 @@ echo "Production Synchronized to Local Successfully."
 echo "Optimizing Local Database..."
 php artisan telescope:clear
 
-echo "Synchronizing Remote Database..."
+echo "Synchronizing Remote with Local..."
 mysqldump staging | ssh -C forge@X.X.X.X "mysql staging"
 echo "Staging Synchronized to Remote Successfully."
 
