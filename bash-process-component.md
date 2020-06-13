@@ -1,11 +1,11 @@
 # SSH Usage with Process Component
 
-The Symphony Process Component is included with Laravel, here's an example of executing a command with artisan.
+The Symphony Process Component is included with Laravel, here's an example of executing a command.
 
 ```
 
 $process = Process::fromShellCommandline(
-    "ssh -C forge@hostname \"mysqldump staging\" | /Applications/MAMP/Library/bin/mysql staging"
+    "ssh -C forge@hostname \"mysqldump staging\" | mysql staging"
 );
 $process->setTimeout(60*10);
 $process->setTty(Process::isTtySupported());
