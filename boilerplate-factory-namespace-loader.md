@@ -15,7 +15,6 @@ $horse->ride();
 
 ## Factory Class
 ```php
-<?php
 <?php declare(strict_types=1);
 
 namespace App\Factories;
