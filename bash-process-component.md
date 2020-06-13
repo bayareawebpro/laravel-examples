@@ -1,4 +1,4 @@
-# SSH Usage with Process Component
+# Using the Symfony Process Component included with Laravel
 
 The Symphony Process Component is included with Laravel, here's an example of executing a command.
 
