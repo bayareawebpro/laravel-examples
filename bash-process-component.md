@@ -17,7 +17,7 @@ $process->setEnv(array(
         "/sbin",
     ))
 ));
-$process->run(function ($type, $buffer) use (&$processOutput, &$process) {
+$process->run(function ($type, $buffer) use (&$process) {
     if ($process::OUT === $type) {
         $this->info($buffer);
     } else {
