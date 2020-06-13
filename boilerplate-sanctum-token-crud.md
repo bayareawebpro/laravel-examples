@@ -1,8 +1,8 @@
-# Laravel AirLock Token CRUD
+# Laravel Sanctum Token CRUD
 
 ## API Route
 ```php
-Route::group(['middleware' => 'auth:airlock'], function(){
+Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::resource('tokens','TokenController');
 });
 ```
@@ -143,7 +143,7 @@ namespace App\Models;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Laravel\Airlock\PersonalAccessToken;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class ApiToken extends PersonalAccessToken
 {
