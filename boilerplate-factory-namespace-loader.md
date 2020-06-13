@@ -2,7 +2,8 @@
 
 Use case: need to resolve many different classes from one entry point without importing any classes.
 
-```
+```php
+<?php
 $entityFactory = EntityFactory::fromNamespace('App\Entities');
 
 $car = $entityFactory->make('car', ['name' => 'Sedan']);
@@ -13,7 +14,8 @@ $horse->ride();
 ```
 
 ## Factory Class
-```
+```php
+<?php
 <?php declare(strict_types=1);
 
 namespace App\Factories;
@@ -42,7 +44,8 @@ class EntityFactory{
 ```
 
 ## Example Classes
-```
+```php
+<?php
 namespace App\Entities;
 class Car{
     
