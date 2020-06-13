@@ -1,6 +1,6 @@
 # The Symfony Process Component in Laravel
 
-The Symphony Process Component is included with Laravel, here's an example of executing a command.
+The Symfony Process Component is included with Laravel, here's an example of executing a command.
 
 ```php
 <?php
