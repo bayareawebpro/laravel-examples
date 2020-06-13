@@ -2,12 +2,12 @@
 - See Unit Tests for Usage
 - https://github.com/stripe/stripe-php
 
-```
+```shell script
 composer require stripe/stripe-php
 ```
 
 ## API Class
-```
+```php
 <?php declare(strict_types=1);
 
 namespace App;
@@ -401,7 +401,7 @@ class StripeApi
 - Find the Test Customer Account ID under your account settings page @ Stripe.
 
 
-```
+```php
 <?php namespace Tests\Feature;
 
 use App\StripeApi;
