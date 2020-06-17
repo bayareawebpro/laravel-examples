@@ -15,6 +15,9 @@ set -e; cd "$(dirname "${BASH_SOURCE[0]}")"
 # Local Destination Directory
 destination=./data/github
 
+# Local Destination Directory
+destination=./data/github
+
 # Setup Log File
 logFile="./logs/github-$(date +"%Y-%m-%d_%H-%M-%S").log"
 
@@ -29,9 +32,9 @@ logger "Logfile: $logFile"
 logger "Synchronizing Github Repos"
 
 declare -a repoCollection=(
-"repo-a" \
-"repo-b" \
-"repo-c"
+"username/repo-a" \
+"username/repo-b" \
+"username/repo-c"
 )
 
 # Iterate the string array using for loop
@@ -40,7 +43,7 @@ for repo in "${repoCollection[@]}"; do
   ./rclone-linux \
   copyurl \
   --verbose \
-  "https://github.com/bayareawebpro/$repo/archive/master.zip" \
+  "https://github.com/$repo/archive/master.zip" \
   "$destination/$repo-master.zip" \
   >> "$logFile" 2>&1
 done
