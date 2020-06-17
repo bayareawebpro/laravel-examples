@@ -15,9 +15,6 @@ set -e; cd "$(dirname "${BASH_SOURCE[0]}")"
 # Local Destination Directory
 destination=./data/github
 
-# Local Destination Directory
-destination=./data/github
-
 # Setup Log File
 logFile="./logs/github-$(date +"%Y-%m-%d_%H-%M-%S").log"
 
