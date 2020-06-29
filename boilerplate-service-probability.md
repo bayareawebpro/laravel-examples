@@ -2,7 +2,7 @@
 
 ## Weighted Random Strategy
 
-Use prediction to guess a result using weighted ratios.
+Guess a random result using weight to favor a specific distribution of outcomes.
 
 ```php
 $color = RandomWeighted::guess([
