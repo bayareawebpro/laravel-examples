@@ -3,7 +3,7 @@
 ## Weighted Random Strategy
 
 ```php
-$color = Probability::randomWeighted([
+$color = RandomWeighted::guess([
   'orange' => 1.5, 
   'green' => 2.7,
   'red' => 1.9,
@@ -15,7 +15,7 @@ $color = Probability::randomWeighted([
 Ads with highest price will be shown more often:
 
 ```php
-$slug = Probability::randomWeighted([
+$slug = RandomWeighted::guess([
   'politics' => 250, 
   'sports' => 240,
   'tech' => 190,
@@ -24,9 +24,9 @@ $slug = Probability::randomWeighted([
 Advertiser::category($slug)->inRandomOrder()->first();
 ```
 
-### Rounds: Totals over x rounds.
+### Simulation: Totals over x rounds.
 ```php
-$results = Probability::rounds([
+$results = RandomWeighted::simulation([
   "a" => 1, 
   "b" => 3,
   "c" => 2,
@@ -44,11 +44,11 @@ $results = Probability::rounds([
 ```php
 <?php declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Probability;
 
 use Illuminate\Support\Collection;
 
-class Probability
+class RendomWeighted
 {
     /**
      * Random Weighted Element
@@ -56,7 +56,7 @@ class Probability
      * @return mixed|null
      * @source
      */
-    public static function randomWeighted(array $weights)
+    public static function guess(array $weights)
     {
         $sum = 0;
         $index = 0;
@@ -77,7 +77,7 @@ class Probability
      * @param int $rounds
      * @return Collection
      */
-    public static function rounds(array $weights, int $rounds = 1000)
+    public static function simulation(array $weights, int $rounds = 1000)
     {
         $results = Collection::make();
         foreach (range(1, $rounds) as $index) {
