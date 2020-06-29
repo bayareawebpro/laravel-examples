@@ -79,10 +79,7 @@ class RendomWeighted
      */
     public static function simulation(array $weights, int $rounds = 1000)
     {
-        $results = Collection::make();
-        foreach (range(1, $rounds) as $index) {
-            $results->push(static::guess($weights));
-        }
+        $results = Collection::times($rounds, fn() => static::guess($weights));
         return Collection::make($weights)->map(function ($value, $key) use ($results) {
             return $results->filter(fn($value) => $value === $key)->count();
         });
