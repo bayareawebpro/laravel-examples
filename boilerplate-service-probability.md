@@ -42,9 +42,9 @@ $results = Probability::rounds([
 
 ### Service Class
 ```php
-<?php
+<?php declare(strict_types=1);
 
-namespace App\Leads;
+namespace App\Services;
 
 use Illuminate\Support\Collection;
 
