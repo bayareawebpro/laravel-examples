@@ -1,24 +1,24 @@
 # Probability Service
 
+Build a new random class using weight factoring the randomness.
+
 ```php
-$pick = Probability::randomWeighted([
-  "a" => 1, 
-  "b" => 3,
-  "c" => 2,
-]);
+$pick = new app(Probability::randomWeighted([
+  ObjectA::class => 1.5, 
+  ObjectB::class => 2.7,
+  ObjectC::class => 1.9,
+]));
 ```
 
 ### Random Weighted Key
 
 ```php
 
-$contracts = [
+Probability::rounds([
   "a" => 1, 
   "b" => 3,
   "c" => 2,
-];
-
-Probability::rounds($contracts, 100);
+], 100);
 
 //hits per 100 rounds.
 [
@@ -38,37 +38,6 @@ use Illuminate\Support\Collection;
 
 class Probability
 {
-    /**
-     * Random Key
-     * @param array $items
-     * @return mixed|null
-     */
-    public static function randomKey(array $items)
-    {
-        return Collection::make($items)->keys()->random();
-    }
-
-    /**
-     * Random Value
-     * @param array $items
-     * @return mixed|null
-     */
-    public static function randomValue(array $items)
-    {
-        return Collection::make($items)->values()->random();
-    }
-
-    /**
-     * Random Element
-     * @param array $items
-     * @return mixed|null
-     */
-    public static function randomElement(array $items)
-    {
-        $randomKey = static::randomKey($items);
-        return Collection::make($items)->reject(fn($item, $key) => $key !== $randomKey)->all();
-    }
-
     /**
      * Random Weighted Element
      * @param array $weights
