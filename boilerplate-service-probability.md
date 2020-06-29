@@ -27,9 +27,9 @@ Advertiser::category($slug)->inRandomOrder()->first();
 ### Simulation: Totals over x rounds.
 ```php
 $results = RandomWeighted::simulation([
-  "a" => 1, 
+  "a" => 2, 
   "b" => 3,
-  "c" => 2,
+  "c" => 1,
 ], 100);
 
 // Totals over 100 rounds.
