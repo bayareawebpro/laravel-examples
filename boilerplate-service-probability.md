@@ -57,10 +57,10 @@ class RendomWeighted
     /**
      * Random Weighted Key
      * @param array $weights
-     * @return mixed|null
+     * @return string|null
      * @source
      */
-    public static function prediction(array $weights)
+    public static function prediction(array $weights): ?string
     {
         $sum = 0;
         $index = 0;
