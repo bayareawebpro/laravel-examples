@@ -1,17 +1,30 @@
 # Probability Service
 
-Build a new random class using weight factoring the randomness.
+## Weighted Random Key
 
 ```php
-$pick = new Probability::randomWeighted([
-  ObjectA::class => 1.5, 
-  ObjectB::class => 2.7,
-  ObjectC::class => 1.9,
+$color = Probability::randomWeighted([
+  'orange' => 1.5, 
+  'green' => 2.7,
+  'red' => 1.9,
 ]);
 ```
 
-### Random Weighted Key
+### Practical Example:
 
+Ads with highest price will be shown more often:
+
+```php
+$adCategory = Probability::randomWeighted([
+  'politics' => 250, 
+  'sports' => 240,
+  'tech' => 190,
+]);
+
+Advertiser::category($result)->inRandomOrder()->first();
+```
+
+### Rounds: Totals over x rounds.
 ```php
 $results = Probability::rounds([
   "a" => 1, 
@@ -19,7 +32,7 @@ $results = Probability::rounds([
   "c" => 2,
 ], 100);
 
-// Total hits over 100 rounds.
+// Totals over 100 rounds.
 [
   "a" => 23, 
   "b" => 61,
