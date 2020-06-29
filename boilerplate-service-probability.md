@@ -81,7 +81,7 @@ class RendomWeighted
     {
         $results = Collection::make();
         foreach (range(1, $rounds) as $index) {
-            $results->push(Probability::randomWeighted($weights));
+            $results->push(static::guess($weights));
         }
         return Collection::make($weights)->map(function ($value, $key) use ($results) {
             return $results->filter(fn($value) => $value === $key)->count();
