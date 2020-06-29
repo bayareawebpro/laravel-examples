@@ -25,7 +25,7 @@ $slug = RandomWeighted::prediction([
   'tech' => 190,
 ]);
 
-Advertiser::category($slug)->inRandomOrder()->first();
+Advertisement::category($slug)->inRandomOrder()->first();
 ```
 
 ### Simulation: Totals over x rounds.
