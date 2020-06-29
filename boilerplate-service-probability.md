@@ -51,7 +51,7 @@ use Illuminate\Support\Collection;
 class RendomWeighted
 {
     /**
-     * Random Weighted Element
+     * Random Weighted Key
      * @param array $weights
      * @return mixed|null
      * @source
