@@ -81,7 +81,7 @@ class RendomWeighted
      * @param int $rounds
      * @return Collection
      */
-    public static function simulation(int $rounds, array $weights)
+    public static function simulation(int $rounds, array $weights): Collection
     {
         $results = Collection::times($rounds, fn() => static::prediction($weights));
         return Collection::make($weights)->map(function ($weight, $key) use ($results) {
