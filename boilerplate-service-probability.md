@@ -1,6 +1,6 @@
 # Probability Service
 
-## Weighted Random Key
+## Weighted Random Strategy
 
 ```php
 $color = Probability::randomWeighted([
