@@ -15,13 +15,13 @@ $color = Probability::randomWeighted([
 Ads with highest price will be shown more often:
 
 ```php
-$adCategory = Probability::randomWeighted([
+$slug = Probability::randomWeighted([
   'politics' => 250, 
   'sports' => 240,
   'tech' => 190,
 ]);
 
-Advertiser::category($result)->inRandomOrder()->first();
+Advertiser::category($slug)->inRandomOrder()->first();
 ```
 
 ### Rounds: Totals over x rounds.
