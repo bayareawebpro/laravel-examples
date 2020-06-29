@@ -16,7 +16,7 @@ $color = RandomWeighted::guess([
 
 ### Practical Example:
 
-Ads with highest price will be shown more often:
+Ads with higher prices will be shown more often then ads with lower prices:
 
 ```php
 $slug = RandomWeighted::guess([
