@@ -2,13 +2,13 @@
 
 ## Weighted Random Strategy
 
-Guess a random result using weight to favor a specific distribution of outcomes.
+Guess a random result using weight to favor a specific distribution of predicatable outcomes.
 
 ```php
 $color = RandomWeighted::guess([
-  'orange' => 2.5, // 25% chance
-  'green' => 3.5, // 35% chance
-  'red' => 4.0, // 40% chance
+  'orange' => 2.5, // ~25% chance
+  'green' => 3.5, // ~35% chance
+  'red' => 4.0, // ~40% chance
 ]);
 ```
 
@@ -36,9 +36,9 @@ $results = RandomWeighted::simulation([
 
 // Totals over 100 rounds.
 [
-  "a" => 23, 
-  "b" => 61,
-  "c" => 16,
+  "a" => ?, 
+  "b" => ?,
+  "c" => ?,
 ]
 ```
 
