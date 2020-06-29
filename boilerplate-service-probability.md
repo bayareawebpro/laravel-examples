@@ -2,11 +2,13 @@
 
 ## Weighted Random Strategy
 
+Use prediction to guess a result using weighted ratios.
+
 ```php
 $color = RandomWeighted::guess([
-  'orange' => 1.5, 
-  'green' => 2.7,
-  'red' => 1.9,
+  'orange' => 2.5, // 25% chance
+  'green' => 3.5, // 35% chance
+  'red' => 4.0, // 40% chance
 ]);
 ```
 
