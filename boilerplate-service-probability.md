@@ -36,9 +36,9 @@ $results = RandomWeighted::simulation([
 
 // Totals over 100 rounds.
 [
-  "a" => 25, 
-  "b" => 60,
-  "c" => 15,
+  "a" => 23, 
+  "b" => 61,
+  "c" => 16,
 ]
 ```
 
