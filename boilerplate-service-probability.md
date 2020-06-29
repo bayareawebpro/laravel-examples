@@ -3,24 +3,23 @@
 Build a new random class using weight factoring the randomness.
 
 ```php
-$pick = new app(Probability::randomWeighted([
+$pick = new Probability::randomWeighted([
   ObjectA::class => 1.5, 
   ObjectB::class => 2.7,
   ObjectC::class => 1.9,
-]));
+]);
 ```
 
 ### Random Weighted Key
 
 ```php
-
-Probability::rounds([
+$results = Probability::rounds([
   "a" => 1, 
   "b" => 3,
   "c" => 2,
 ], 100);
 
-//hits per 100 rounds.
+// Total hits over 100 rounds.
 [
   "a" => 23, 
   "b" => 61,
