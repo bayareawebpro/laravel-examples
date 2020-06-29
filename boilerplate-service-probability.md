@@ -80,8 +80,8 @@ class RendomWeighted
     public static function simulation(array $weights, int $rounds = 1000)
     {
         $results = Collection::times($rounds, fn() => static::guess($weights));
-        return Collection::make($weights)->map(function ($value, $key) use ($results) {
-            return $results->filter(fn($value) => $value === $key)->count();
+        return Collection::make($weights)->map(function ($weight, $key) use ($results) {
+            return $results->filter(fn($result) => $result === $key)->count();
         });
     }
 }
