@@ -2,7 +2,7 @@
 
 Useful for A/B Testing, User Segmenting, Weighted Strategies etc... 
 
-## Random Weighted Strategy
+## Random Weighted Prediction
 
 Guess a random result using weight to favor a specific distribution of predicatable outcomes.
 
