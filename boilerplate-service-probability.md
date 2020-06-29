@@ -30,11 +30,11 @@ Advertiser::category($slug)->inRandomOrder()->first();
 
 ### Simulation: Totals over x rounds.
 ```php
-$results = RandomWeighted::simulation([
+$results = RandomWeighted::simulation(100, [
   "a" => 2, 
   "b" => 3,
   "c" => 1,
-], 100);
+]);
 
 // Totals over 100 rounds.
 [
@@ -81,7 +81,7 @@ class RendomWeighted
      * @param int $rounds
      * @return Collection
      */
-    public static function simulation(array $weights, int $rounds = 1000)
+    public static function simulation(int $rounds, array $weights)
     {
         $results = Collection::times($rounds, fn() => static::guess($weights));
         return Collection::make($weights)->map(function ($weight, $key) use ($results) {
