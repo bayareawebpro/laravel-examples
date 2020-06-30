@@ -63,16 +63,13 @@ class RandomWeighted
     public static function prediction(array $weights): ?string
     {
         $sum = 0;
-        $index = 0;
-        $weights = Collection::make($weights);
+        $weights = Collection::make($weights)->sort();
         $random = mt_rand(1, $weights->sum());
-        $weights->each(function ($weight) use (&$sum, &$index, $random) {
-            if (($sum += $weight) >= $random) {
-                return false;
+        foreach($weights as $key => $weight){
+             if (($sum += $weight) >= $random) {
+                return $key;
             }
-            $index++;
-        });
-        return $weights->keys()->get($index);
+        }
     }
 
     /**
