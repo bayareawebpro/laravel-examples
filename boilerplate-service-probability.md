@@ -54,7 +54,7 @@ use Illuminate\Support\Collection;
 
 class RandomWeighted
 {
-    /**
+     /**
      * Random Weighted Key
      * @param array $weights
      * @return string|null
@@ -70,6 +70,7 @@ class RandomWeighted
                 return $key;
             }
         }
+        return null;
     }
 
     /**
@@ -80,7 +81,8 @@ class RandomWeighted
      */
     public static function simulation(int $rounds, array $weights): Collection
     {
-        $results = Collection::times($rounds, function() use ($weights){ 
+        $results = Collection::times($rounds, function() use ($rounds, $weights){ 
+            usleep(mt_rand(0, $rounds));
             return static::prediction($weights);
         });
         return Collection::make($weights)->map(function ($weight, $key) use ($results) {
