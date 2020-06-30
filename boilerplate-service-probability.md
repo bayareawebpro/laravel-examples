@@ -2,6 +2,8 @@
 
 Useful for A/B Testing, User Segmenting, Weighted Strategies etc... 
 
+Live Example: https://implode.io/av1Cy9
+
 ## Random Weighted Prediction
 
 Guess a random result using weight to favor a specific distribution of predicatable outcomes.
