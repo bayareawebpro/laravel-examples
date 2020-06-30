@@ -52,7 +52,7 @@ namespace App\Services\Probability;
 
 use Illuminate\Support\Collection;
 
-class RendomWeighted
+class RandomWeighted
 {
     /**
      * Random Weighted Key
@@ -83,9 +83,13 @@ class RendomWeighted
      */
     public static function simulation(int $rounds, array $weights): Collection
     {
-        $results = Collection::times($rounds, fn() => static::prediction($weights));
+        $results = Collection::times($rounds, function() use ($weights){ 
+            return static::prediction($weights);
+        });
         return Collection::make($weights)->map(function ($weight, $key) use ($results) {
-            return $results->filter(fn($result) => $result === $key)->count();
+            return $results->filter(function($result) use ($key){
+                return $result === $key;
+            })->count();
         });
     }
 }
