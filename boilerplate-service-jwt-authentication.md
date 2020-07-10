@@ -68,7 +68,13 @@ class JsonWebToken
     {
         static::$model = $model;
 
-        Auth::viaRequest('laravel-jwt', new static);
+        Auth::viaRequest('laravel-jwt', function(Request $request){
+            try {
+                $token = $request->jwt();
+                throw_unless($token->get('valid'), AuthorizationException::class);
+                return static::$model::query()->find($token->get('user'));
+            } catch (Throwable $e) {}
+        });
 
         Request::macro('jwt', function (?string $key = null) use ($keyName) {
             $token = JsonWebToken::singletonInstance($this->get($keyName));
@@ -90,22 +96,6 @@ class JsonWebToken
         return $app->bound($token)
             ? $app->get($token)
             : $app->instance($token, JsonWebToken::parseToken($token));
-    }
-
-    /**
-     * Invoke the authorization resolver.
-     * @param Request $request
-     * @return mixed
-     */
-    public function __invoke(Request $request)
-    {
-        try {
-            $token = $request->jwt();
-            throw_unless($token->get('valid'), AuthorizationException::class);
-            return static::$model::query()->find($token->get('user'));
-        } catch (Throwable $e) {
-            logger()->error($e->getMessage(), $e->getTrace());
-        }
     }
 
     /**
