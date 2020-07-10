@@ -105,11 +105,7 @@ class JsonWebToken
      */
     public static function parseToken(string $token): Collection
     {
-        try {
-            return Collection::make(json_decode(Crypt::decryptString($token)));
-        } catch (Throwable $e) {
-            logger()->error($e->getMessage(), $e->getTrace());
-        }
+        return Collection::make(json_decode(Crypt::decryptString($token)));
     }
 
     /**
