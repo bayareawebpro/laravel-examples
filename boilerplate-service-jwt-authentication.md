@@ -30,6 +30,7 @@ http://laravel.test/api/user?token=xxx
 ### Get Data From Token
 ```php
 $request->jwt()->get('my_key');
+$request->jwt('my_key');
 ```
 
 
@@ -61,11 +62,17 @@ class JsonWebToken
     public static function model(string $model, string $keyName = 'token'): void
     {
         Auth::viaRequest('laravel-jwt', new static);
-        Request::macro('jwt', function() use ($keyName){
-            if(app()->bound('jwt-decoded')){
-                return app()->get('jwt-decoded');
-            }
-            return app()->instance('jwt-decoded', JsonWebToken::parseToken($this->get($keyName)));
+        Request::macro('jwt', function(?string $key = null) use ($keyName){
+            $app = app();
+            $token = (
+                $app->bound('jwt-decoded')
+                ? $app->get('jwt-decoded')
+                : $app->instance('jwt-decoded',
+                    JsonWebToken::parseToken($this->get($keyName))
+                )
+            );
+            if($key) return $token->get($key);
+            return $token;
         });
         static::$model = $model;
     }
@@ -124,5 +131,4 @@ class JsonWebToken
         return Carbon::parse($timestamp)->greaterThanOrEqualTo(now());
     }
 }
-
 ```
