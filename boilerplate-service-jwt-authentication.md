@@ -160,7 +160,7 @@ class JsonWebToken
      */
     public static function isValidTimestamp(string $timestamp): bool
     {
-        return Carbon::parse($timestamp)->greaterThanOrEqualTo(now());
+        return Carbon::parse($timestamp)->greaterThanOrEqualTo(Carbon::now());
     }
 }
 ```
