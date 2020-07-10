@@ -39,6 +39,7 @@ $request->jwt()->get('my_key');
 
 namespace App\Services;
 
+use RuntimeException;
 use Throwable;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -51,6 +52,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 class JsonWebToken
 {
     public static string $model;
+    public static string $decoded;
 
     /**
      * @param string $model
@@ -60,7 +62,10 @@ class JsonWebToken
     {
         Auth::viaRequest('laravel-jwt', new static);
         Request::macro('jwt', function() use ($keyName){
-            return JsonWebToken::parseToken($this->get($keyName));
+            if(app()->bound('jwt-decoded')){
+                return app()->get('jwt-decoded');
+            }
+            return app()->instance('jwt-decoded', JsonWebToken::parseToken($this->get($keyName)));
         });
         static::$model = $model;
     }
@@ -102,6 +107,7 @@ class JsonWebToken
      * Parse the token to collection instance.
      * @param string $token
      * @return Collection
+     * @throws RuntimeException
      */
     public static function parseToken(string $token): Collection
     {
@@ -118,4 +124,5 @@ class JsonWebToken
         return Carbon::parse($timestamp)->greaterThanOrEqualTo(now());
     }
 }
+
 ```
