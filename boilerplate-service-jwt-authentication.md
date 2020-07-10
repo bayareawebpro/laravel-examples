@@ -149,3 +149,54 @@ class JsonWebToken
     }
 }
 ```
+
+### Unit Tests
+
+```php
+<?php namespace Tests\Feature;
+
+use App\User;
+use Tests\TestCase;
+use App\Services\JsonWebToken;
+
+class JwtTest extends TestCase
+{
+    public function test_cannot_authorize_user()
+    {
+        $this
+            ->json('GET',"/api/user?token=fake")
+            ->assertStatus(401)
+        ;
+    }
+
+    public function test_can_authorize_user()
+    {
+        $user = factory(User::class)->create();
+        $token = JsonWebToken::createTokenForUser($user);
+
+        $this
+            ->json('GET',"/api/user?token={$token}")
+            ->assertStatus(200)
+            ->assertJson($user->toArray())
+        ;
+    }
+
+    public function test_valid_token()
+    {
+        $token = JsonWebToken::parseToken(JsonWebToken::createTokenForUser(
+            factory(User::class)->create(),
+            now()->addRealSeconds(60), [
+            'test' => 123
+        ]));
+        $this->assertTrue($token->get('valid'));
+        $this->assertSame(123, $token->get('test'));
+    }
+
+    public function test_invalid_token()
+    {
+        $fake = JsonWebToken::parseToken('fake');
+        $this->assertfalse($fake->get('valid'));
+        $this->assertNull($fake->get('test'));
+    }
+}
+```
