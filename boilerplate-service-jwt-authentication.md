@@ -64,7 +64,9 @@ class JsonWebToken
         Auth::viaRequest('laravel-jwt', new static);
         Request::macro('jwt', function(?string $key = null) use ($keyName){
             $app = app();
-            $token = $app->bound('jwt-decoded') ? $app->get('jwt-decoded') : $app->instance('jwt-decoded',
+            $token = $app->bound('jwt-decoded')
+                ? $app->get('jwt-decoded')
+                : $app->instance('jwt-decoded',
                 JsonWebToken::parseToken($this->get($keyName))
             );
             if($key) return $token->get($key);
