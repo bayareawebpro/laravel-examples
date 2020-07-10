@@ -61,18 +61,30 @@ class JsonWebToken
      */
     public static function register(string $model, string $keyName = 'token'): void
     {
+        static::$model = $model;
+
         Auth::viaRequest('laravel-jwt', new static);
+
         Request::macro('jwt', function(?string $key = null) use ($keyName){
-            $app = app();
-            $token = $app->bound('jwt-decoded')
-                ? $app->get('jwt-decoded')
-                : $app->instance('jwt-decoded',
-                JsonWebToken::parseToken($this->get($keyName))
-            );
-            if($key) return $token->get($key);
+            $token = JsonWebToken::singletonInstance($this->get($keyName));
+            if($key){
+                return $token->get($key);
+            }
             return $token;
         });
-        static::$model = $model;
+    }
+
+    /**
+     * Get Singleton Instance of Token
+     * @param $token
+     * @return Collection
+     */
+    public static function singletonInstance($token): Collection
+    {
+        $app = app();
+        return $app->bound($token)
+            ? $app->get($token)
+            : $app->instance($token, JsonWebToken::parseToken($token));
     }
 
     /**
