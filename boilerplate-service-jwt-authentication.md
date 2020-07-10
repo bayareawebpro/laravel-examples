@@ -66,9 +66,9 @@ class JsonWebToken
 
         Auth::viaRequest('laravel-jwt', new static);
 
-        Request::macro('jwt', function(?string $key = null) use ($keyName){
+        Request::macro('jwt', function (?string $key = null) use ($keyName) {
             $token = JsonWebToken::singletonInstance($this->get($keyName));
-            if($key){
+            if ($key) {
                 return $token->get($key);
             }
             return $token;
@@ -111,13 +111,13 @@ class JsonWebToken
      * @param Carbon|null $until
      * @return string
      */
-    public static function createTokenForUser(Model $user, ?Carbon $until = null,array $data = []): string
+    public static function createTokenForUser(Model $user, ?Carbon $until = null, array $data = []): string
     {
         $until = ($until ?? Carbon::now()->addDays(30))->toDateTimeString();
         return Crypt::encryptString(
-            Collection::make(['expires' => $until, 'user'  => $user->getKey()])
-            ->merge($data)
-            ->toJson()
+            Collection::make(['expires' => $until, 'user' => $user->getKey()])
+                ->merge($data)
+                ->toJson()
         );
     }
 
@@ -127,14 +127,14 @@ class JsonWebToken
      * @return Collection
      * @throws RuntimeException
      */
-    public static function parseToken(string $token): Collection
+    public static function parseToken(?string $token = null): Collection
     {
-        try{
+        try {
             $token = Collection::make(json_decode(Crypt::decryptString($token)));
             $token->put('valid', static::isValidTimestamp($token->get('expires')));
             return $token;
-        }catch (DecryptException $exception){
-            return Collection::make(['valid'=> false]);
+        } catch (DecryptException $exception) {
+            return Collection::make(['valid' => false]);
         }
     }
 
