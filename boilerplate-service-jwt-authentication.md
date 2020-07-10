@@ -49,6 +49,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class JsonWebToken
 {
@@ -96,7 +97,7 @@ class JsonWebToken
     {
         try {
             $token = $request->jwt();
-            throw_unless($this->isValidTimestamp($token->get('valid')), AuthorizationException::class);
+            throw_unless($this->isValidTimestamp($token->get('expires')), AuthorizationException::class);
             return static::$model::query()->find($token->get('user'));
         } catch (Throwable $e) {
             logger()->error($e->getMessage(), $e->getTrace());
@@ -114,7 +115,7 @@ class JsonWebToken
     {
         $until = ($until ?? Carbon::now()->addDays(30))->toDateTimeString();
         return Crypt::encryptString(
-            Collection::make(['valid' => $until, 'user'  => $user->getKey()])
+            Collection::make(['expires' => $until, 'user'  => $user->getKey()])
             ->merge($data)
             ->toJson()
         );
@@ -128,7 +129,13 @@ class JsonWebToken
      */
     public static function parseToken(string $token): Collection
     {
-        return Collection::make(json_decode(Crypt::decryptString($token)));
+        try{
+            $token = Collection::make(json_decode(Crypt::decryptString($token)));
+            $token->put('valid', static::isValidTimestamp($token->get('expires')));
+            return $token;
+        }catch (DecryptException $exception){
+            return Collection::make(['valid'=> false]);
+        }
     }
 
     /**
@@ -136,9 +143,62 @@ class JsonWebToken
      * @param string $timestamp
      * @return bool
      */
-    public function isValidTimestamp(string $timestamp): bool
+    public static function isValidTimestamp(string $timestamp): bool
     {
         return Carbon::parse($timestamp)->greaterThanOrEqualTo(now());
+    }
+}
+```
+
+
+### Feature Test
+```php
+
+<?php namespace Tests\Feature;
+
+use App\User;
+use Tests\TestCase;
+use App\Services\JsonWebToken;
+
+class JwtTest extends TestCase
+{
+
+    public function test_cannot_authorize_user()
+    {
+        $this
+            ->json('GET',"/api/user?token=fake")
+            ->assertStatus(401)
+        ;
+    }
+
+    public function test_can_authorize_user()
+    {
+        $user = factory(User::class)->create();
+        $token = JsonWebToken::createTokenForUser($user);
+
+        $this
+            ->json('GET',"/api/user?token={$token}")
+            ->assertStatus(200)
+            ->assertJson($user->toArray())
+        ;
+    }
+
+    public function test_valid_token()
+    {
+        $token = JsonWebToken::parseToken(JsonWebToken::createTokenForUser(
+            factory(User::class)->create(),
+            now()->addRealSeconds(60), [
+            'test' => 123
+        ]));
+        $this->assertTrue($token->get('valid'));
+        $this->assertSame(123, $token->get('test'));
+    }
+
+    public function test_invalid_token()
+    {
+        $fake = JsonWebToken::parseToken('fake');
+        $this->assertfalse($fake->get('valid'));
+        $this->assertNull($fake->get('test'));
     }
 }
 ```
