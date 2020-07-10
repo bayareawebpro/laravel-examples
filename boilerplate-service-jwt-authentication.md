@@ -3,7 +3,7 @@
 ### Register in Auth Service Provider.
 
 ```php
-JsonWebToken::model(User::class, 'token');
+JsonWebToken::register(User::class, 'token');
 ```
 
 ### Configure Auth.php
@@ -40,9 +40,9 @@ $request->jwt('my_key');
 
 namespace App\Services;
 
-use RuntimeException;
 use Throwable;
 use Carbon\Carbon;
+use RuntimeException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -59,17 +59,13 @@ class JsonWebToken
      * @param string $model
      * @param string $keyName
      */
-    public static function model(string $model, string $keyName = 'token'): void
+    public static function register(string $model, string $keyName = 'token'): void
     {
         Auth::viaRequest('laravel-jwt', new static);
         Request::macro('jwt', function(?string $key = null) use ($keyName){
             $app = app();
-            $token = (
-                $app->bound('jwt-decoded')
-                ? $app->get('jwt-decoded')
-                : $app->instance('jwt-decoded',
-                    JsonWebToken::parseToken($this->get($keyName))
-                )
+            $token = $app->bound('jwt-decoded') ? $app->get('jwt-decoded') : $app->instance('jwt-decoded',
+                JsonWebToken::parseToken($this->get($keyName))
             );
             if($key) return $token->get($key);
             return $token;
