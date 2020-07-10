@@ -150,7 +150,7 @@ class JsonWebToken
 }
 ```
 
-### Unit Tests
+### Feature Tests
 
 ```php
 <?php namespace Tests\Feature;
