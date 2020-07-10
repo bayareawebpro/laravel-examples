@@ -22,6 +22,7 @@ $token = JsonWebToken::createTokenForUser(User::first(), now()->addHours(3), [
 ]);
 ```
 
+
 ### Authenticate
 ```text
 http://laravel.test/api/user?token=xxx
@@ -33,6 +34,10 @@ $request->jwt()->get('my_key');
 $request->jwt('my_key');
 ```
 
+### Extend Token Lifetime
+```php
+$newToken = JsonWebToken::extendExpires(request()->jwt(), now()->addHours(3));
+```
 
 ### Service Class
 ```php
@@ -139,6 +144,17 @@ class JsonWebToken
     }
 
     /**
+     * Extend Expires Claim
+     * @param Collection $token
+     * @param Carbon $carbon
+     * @return string
+     */
+    public static function extendExpires(Collection $token, Carbon $carbon): string
+    {
+        return Crypt::encryptString($token->toBase()->put('expires', $carbon->toDateTimeString())->toJson());
+    }
+
+    /**
      * Is the timestamp claim valid.
      * @param string $timestamp
      * @return bool
@@ -198,5 +214,18 @@ class JwtTest extends TestCase
         $this->assertfalse($fake->get('valid'));
         $this->assertNull($fake->get('test'));
     }
+
+    public function test_extend_token()
+    {
+        $user = factory(User::class)->create();
+        $token = JsonWebToken::createTokenForUser($user, now()->addHours(1));
+        $token = JsonWebToken::parseToken($token);
+        $extended = now()->addHours(2);
+        $newToken = JsonWebToken::extendExpires($token, $extended);
+        $newToken = JsonWebToken::parseToken($newToken);
+        $this->assertNotSame($token->get('expires'), $newToken->get('expires'));
+        $this->assertSame($newToken->get('expires'), $extended->toDateTimeString());
+    }
 }
+
 ```
