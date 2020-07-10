@@ -17,7 +17,7 @@ JsonWebToken::register(User::class, 'token');
 
 ### Create New Token
 ```php
-$token = JsonWebToken::createTokenForUser(User::first(), now()->addHours(3), [
+$token = JsonWebToken::createForUser(User::first(), now()->addHours(3), [
   'my_key' => true
 ]);
 ```
