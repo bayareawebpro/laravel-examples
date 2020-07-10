@@ -116,7 +116,7 @@ class JsonWebToken
      * @param Carbon|null $until
      * @return string
      */
-    public static function createTokenForUser(Model $user, ?Carbon $until = null, array $data = []): string
+    public static function createForUser(Model $user, ?Carbon $until = null, array $data = []): string
     {
         $until = ($until ?? Carbon::now()->addDays(30))->toDateTimeString();
         return Crypt::encryptString(
