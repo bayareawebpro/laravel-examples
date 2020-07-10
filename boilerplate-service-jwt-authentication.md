@@ -59,7 +59,6 @@ use Illuminate\Contracts\Encryption\DecryptException;
 class JsonWebToken
 {
     public static string $model;
-    public static string $decoded;
 
     /**
      * @param string $model
