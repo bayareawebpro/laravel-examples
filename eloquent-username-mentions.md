@@ -15,6 +15,19 @@ $post->getMentionedUsers()->each(fn($user)=>$user->notify(new MentionNotificatio
 <p>{!! $post->compileMentions() !!}</p>
 ```
 
+### User Model Method
+```php
+/**
+ * Find by username
+ * @param string ...$usernames
+ * @return EloquentCollection
+ */
+public static function findByUsername(...$usernames): EloquentCollection
+{
+    return static::query()->whereIn('username', $usernames)->get();
+}
+```
+
 ### Configure Model
 
 ```php
