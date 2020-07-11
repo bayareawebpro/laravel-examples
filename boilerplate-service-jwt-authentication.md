@@ -34,9 +34,9 @@ $request->jwt()->get('my_key');
 $request->jwt('my_key');
 ```
 
-### Extend Token Lifetime
+### Extend Token Lifetime & Claims
 ```php
-$newToken = JsonWebToken::extendExpires(request()->jwt(), now()->addHours(3));
+$newToken = JsonWebToken::extendToken(request()->jwt(), now()->addHours(3), ['key' => true]);
 ```
 
 ### Service Class
@@ -69,11 +69,10 @@ class JsonWebToken
         static::$model = $model;
 
         Auth::viaRequest('laravel-jwt', function(Request $request){
-            try {
-                $token = $request->jwt();
-                throw_unless($token->get('valid'), AuthorizationException::class);
+            $token = $request->jwt();
+            if($token->get('valid')){
                 return static::$model::query()->find($token->get('user'));
-            } catch (Throwable $e) {}
+            }
         });
 
         Request::macro('jwt', function (?string $key = null) use ($keyName) {
@@ -138,9 +137,9 @@ class JsonWebToken
      * @param Carbon $carbon
      * @return string
      */
-    public static function extendExpires(Collection $token, Carbon $carbon): string
+    public static function extendToken(Collection $token, Carbon $carbon, array $claims = []): string
     {
-        return Crypt::encryptString($token->toBase()->put('expires', $carbon->toDateTimeString())->toJson());
+        return Crypt::encryptString($token->toBase()->merge($claims)->put('expires', $carbon->toDateTimeString())->toJson());
     }
 
     /**
@@ -177,7 +176,7 @@ class JwtTest extends TestCase
     public function test_can_authorize_user()
     {
         $user = factory(User::class)->create();
-        $token = JsonWebToken::createTokenForUser($user);
+        $token = JsonWebToken::createForUser($user);
 
         $this
             ->json('GET',"/api/user?token={$token}")
@@ -188,7 +187,7 @@ class JwtTest extends TestCase
 
     public function test_valid_token()
     {
-        $token = JsonWebToken::parseToken(JsonWebToken::createTokenForUser(
+        $token = JsonWebToken::parseToken(JsonWebToken::createForUser(
             factory(User::class)->create(),
             now()->addRealSeconds(60), [
             'test' => 123
@@ -207,7 +206,7 @@ class JwtTest extends TestCase
     public function test_extend_token()
     {
         $user = factory(User::class)->create();
-        $token = JsonWebToken::createTokenForUser($user, now()->addHours(1));
+        $token = JsonWebToken::createForUser($user, now()->addHours(1));
         $token = JsonWebToken::parseToken($token);
         $extended = now()->addHours(2);
         $newToken = JsonWebToken::extendExpires($token, $extended);
