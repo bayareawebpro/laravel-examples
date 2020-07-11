@@ -276,7 +276,7 @@ use App\Services\JsonWebToken;
 
 class JwtTest extends TestCase
 {
-    public function test_cannot_authorize_user()
+    public function test_unauthorized_user()
     {
         $this
             ->json('GET',"/api/user?token=fake")
@@ -284,27 +284,28 @@ class JwtTest extends TestCase
         ;
     }
 
-    public function test_can_authorize_user()
+    public function test_authorized_user()
     {
         $user = factory(User::class)->create();
         $token = JsonWebToken::createForUser($user);
-
         $this
             ->json('GET',"/api/user?token={$token}")
-            ->assertStatus(200)
             ->assertJson($user->toArray())
+            ->assertStatus(200)
         ;
     }
 
     public function test_valid_token()
     {
-        $token = JsonWebToken::parseToken(JsonWebToken::createForUser(
-            factory(User::class)->create(),
-            now()->addRealSeconds(60), [
-            'test' => 123
-        ]));
+        $expires = now()->addRealSeconds(60);
+        $user = factory(User::class)->create();
+
+        $token = JsonWebToken::createForUser($user, $expires, ['test' => true]);
+        $token = JsonWebToken::parseToken($token);
+
         $this->assertTrue($token->get('valid'));
-        $this->assertSame(123, $token->get('test'));
+        $this->assertTrue($token->get('test'));
+        $this->assertSame($expires->toDateTimeString(), $token->get('expires'));
     }
 
     public function test_invalid_token()
@@ -314,17 +315,34 @@ class JwtTest extends TestCase
         $this->assertNull($fake->get('test'));
     }
 
-    public function test_extend_token()
+    public function test_expired_token()
+    {
+        $user = factory(User::class)->create();
+        $token = JsonWebToken::createForUser($user, now()->subHours(1));
+
+        $token = JsonWebToken::parseToken($token);
+        $this->assertFalse($token->get('valid'));
+
+        $this
+            ->json('GET',"/api/user?token={$token}")
+            ->assertStatus(401)
+        ;
+    }
+
+    public function test_extended_token()
     {
         $user = factory(User::class)->create();
         $token = JsonWebToken::createForUser($user, now()->addHours(1));
         $token = JsonWebToken::parseToken($token);
+
         $extended = now()->addHours(2);
-        $newToken = JsonWebToken::extendToken($token, $extended);
+        $newToken = JsonWebToken::extendToken($token, $extended, ['new'=>true]);
         $newToken = JsonWebToken::parseToken($newToken);
-        $this->assertNotSame($token->get('expires'), $newToken->get('expires'));
+
+        $this->assertTrue($newToken->get('new'));
+        $this->assertTrue($newToken->get('valid'));
         $this->assertSame($newToken->get('expires'), $extended->toDateTimeString());
+        $this->assertNotSame($token->get('expires'), $newToken->get('expires'));
     }
 }
-
 ```
