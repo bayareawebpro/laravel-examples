@@ -25,6 +25,8 @@ class Post extends Model
     public string $mentionable = 'content';
 ```
 
+### Trait
+
 ```php
 <?php declare(strict_types=1);
 
@@ -67,4 +69,86 @@ trait HasMentions
         return User::findByUsername(...$this->getMentions()->take(100)->toArray());
     }
 }
+```
+
+### Service
+
+```php
+<?php declare(strict_types=1);
+
+namespace App\Services;
+
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Str;
+use Throwable;
+
+class Mentions
+{
+    const MENTIONS_REGEX = "(@(?P<name>[a-zA-Z\-_]+))";
+
+    private string $value;
+
+    /**
+     * Mentions constructor.
+     * @param string $value
+     */
+    public function __construct(string $value)
+    {
+        $this->value = $value;
+    }
+
+    /**
+     * Make Instance of Self.
+     * @param string $value
+     * @return static
+     */
+    public static function make(string $value): self
+    {
+        return app(static::class, ['value' => $value]);
+    }
+
+    /**
+     * Get the mentions as a collection.
+     * @return Collection
+     */
+    public function toCollection(): Collection
+    {
+        return Str::of($this->value)->matchAll(static::MENTIONS_REGEX);
+    }
+
+    /**
+     * Compile the blade template for rendering.
+     * @return string
+     */
+    public function compile(): string
+    {
+        return Blade::compileString($this->compileTemplate());
+    }
+
+    /**
+     * Compile the string to a blade template.
+     * @return string
+     */
+    protected function compileTemplate(): string
+    {
+        return (string) Str::of($this->value)->replaceMatches(static::MENTIONS_REGEX,
+            fn($match) => $this->template($match['name'])
+        );
+    }
+
+    /**
+     * Wrap the name with the blade template tags.
+     * @param $username
+     * @return string
+     * @throws Throwable
+     */
+    protected function template($username): string
+    {
+        return view('components.posts.mention', [
+            'username' => $username
+        ])->render();
+    }
+}
+
 ```
