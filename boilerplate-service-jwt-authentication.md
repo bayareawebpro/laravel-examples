@@ -79,8 +79,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class JsonWebToken
 {
-    protected static ?Collection $decoded = null;
-
     /**
      * Register The Model & Macros
      * @param string $model
