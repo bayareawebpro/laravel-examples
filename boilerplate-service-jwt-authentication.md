@@ -63,9 +63,11 @@ $newToken = JsonWebToken::extendToken(request()->jwt(), now()->addHours(3), ['ke
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 use stdClass;
 use Carbon\Carbon;
-use RuntimeException;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -77,7 +79,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class JsonWebToken
 {
-    protected static Collection $decoded;
+    protected static ?Collection $decoded = null;
 
     /**
      * Register The Model & Macros
@@ -89,7 +91,7 @@ class JsonWebToken
         Auth::viaRequest('laravel-jwt', function (Request $request) use ($model) {
             $token = $request->jwt();
             if ($token->get('valid')) {
-                return $model::find($token->get('user'));
+                return $model::query()->find($token->get('user'));
             }
         });
 
@@ -109,24 +111,25 @@ class JsonWebToken
      */
     public static function singletonInstance($token): Collection
     {
-        return static::$decoded ?: (static::$decoded = JsonWebToken::parseToken($token));
+        $app = App::getFacadeRoot();
+        return $app->bound('jwt-decoded')
+            ? $app->get('jwt-decoded')
+            : $app->instance('jwt-decoded', JsonWebToken::parseToken($token));
     }
 
     /**
      * Create a new token for a model.
      * @param Model $user
      * @param array $data
-     * @param Carbon|null $until
+     * @param Carbon|null $expires
      * @return string
      */
-    public static function createForUser(Model $user, ?Carbon $until = null, array $data = []): string
+    public static function createForUser(Model $user, ?Carbon $expires = null, array $data = []): string
     {
-        $until = ($until ?? Carbon::now()->addDays(30));
-
         $headers = static::getHeaders();
         $payload = static::encodeData(array_merge([
+            "expires" => ($expires ?? Carbon::now()->addDays(30))->toDateTimeString(),
             "user"    => $user->getKey(),
-            "expires" => $until->toDateTimeString(),
         ], $data));
 
         return "{$headers}.{$payload}." . static::createSignature($headers . $payload);
@@ -136,19 +139,18 @@ class JsonWebToken
      * Parse the token to collection instance.
      * @param string $token
      * @return Collection
-     * @throws RuntimeException
      */
     public static function parseToken(?string $token = null): Collection
     {
-        $tokenProperties = Collection::make(['valid' => false]);
-
-        list($header, $payload, $signature) = explode('.', $token);
-
-        if (static::verifySignature($header . $payload, $signature)) {
-            $tokenProperties = $tokenProperties->merge(static::decodeData($payload));
-            $tokenProperties->put('valid', static::isValidTimestamp($tokenProperties->get('expires')));
+        if (Str::substrCount($token, '.') === 2) {
+            list($header, $payload, $signature) = explode('.', $token);
+            if (static::verifySignature($header . $payload, $signature)) {
+                $tokenProperties = Collection::make(static::decodeData($payload));
+                $tokenProperties->put('valid', static::isValidTimestamp($tokenProperties->get('expires')));
+                return $tokenProperties;
+            }
         }
-        return $tokenProperties;
+        return Collection::make(['valid' => false]);
     }
 
     /**
@@ -178,7 +180,7 @@ class JsonWebToken
      */
     protected static function createSignature(string $value): string
     {
-        return hash_hmac(config('auth.jwt.algorithm'), $value, static::getEncryptionKey(), false);
+        return hash_hmac(static::getAlgorithm(), $value, static::getEncryptionKey(), false);
     }
 
     /**
@@ -187,7 +189,16 @@ class JsonWebToken
      */
     protected static function getEncryptionKey(): string
     {
-        return base64_encode(config('auth.jwt.secret'));
+        return base64_encode(Config::get('auth.jwt.secret'));
+    }
+
+    /**
+     * Get Encryption Key
+     * @return string
+     */
+    protected static function getAlgorithm(): string
+    {
+        return Config::get('auth.jwt.algorithm');
     }
 
     /**
@@ -195,9 +206,9 @@ class JsonWebToken
      * @param int $length
      * @return string
      */
-    public static function generateSecret(int $length = 48): string
+    public static function generateSecret(int $length = 64): string
     {
-        return bin2hex(openssl_random_pseudo_bytes($length));
+        return Str::random($length);
     }
 
     /**
@@ -208,7 +219,7 @@ class JsonWebToken
      */
     protected static function verifySignature(string $payload, string $value): bool
     {
-        return hash_equals(hash_hmac(config('auth.jwt.algorithm'), $payload, static::getEncryptionKey(), false), $value);
+        return hash_equals($value, hash_hmac(static::getAlgorithm(), $payload, static::getEncryptionKey(), false));
     }
 
     /**
