@@ -217,7 +217,7 @@ class JsonWebToken
      */
     protected static function verifySignature(string $payload, string $value): bool
     {
-        return hash_equals($value, hash_hmac(static::getAlgorithm(), $payload, static::getEncryptionKey(), false));
+        return hash_equals($value, static::createSignature($payload));
     }
 
     /**
