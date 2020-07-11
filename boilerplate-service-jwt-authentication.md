@@ -209,7 +209,7 @@ class JwtTest extends TestCase
         $token = JsonWebToken::createForUser($user, now()->addHours(1));
         $token = JsonWebToken::parseToken($token);
         $extended = now()->addHours(2);
-        $newToken = JsonWebToken::extendExpires($token, $extended);
+        $newToken = JsonWebToken::extendToken($token, $extended);
         $newToken = JsonWebToken::parseToken($newToken);
         $this->assertNotSame($token->get('expires'), $newToken->get('expires'));
         $this->assertSame($newToken->get('expires'), $extended->toDateTimeString());
