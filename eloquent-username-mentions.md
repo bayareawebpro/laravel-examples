@@ -9,6 +9,12 @@ $post->save();
 $post->getMentionedUsers()->each(fn($user)=>$user->notify(new MentionNotification($post)));
 ```
 
+### Blade Rendering
+
+```blade
+<p>{!! $post->compileMentions() !!}</p>
+```
+
 ### Configure Model
 
 ```php
