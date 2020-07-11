@@ -6,6 +6,11 @@
 JsonWebToken::generateSecret();
 ```
 
+### Add Secret to Environment File
+```php
+JWT_SECRET=xxx
+```
+
 ### Configure Auth.php
 ```
 'guards' => [
@@ -64,7 +69,6 @@ use RuntimeException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -73,7 +77,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class JsonWebToken
 {
-
     protected static Collection $decoded;
 
     /**
@@ -120,16 +123,13 @@ class JsonWebToken
     {
         $until = ($until ?? Carbon::now()->addDays(30));
 
-        $header = static::encodeData([
-            "alg" => "HS512",
-            "typ" => "JWT",
-        ]);
+        $headers = static::getHeaders();
         $payload = static::encodeData(array_merge([
             "user"    => $user->getKey(),
             "expires" => $until->toDateTimeString(),
         ], $data));
 
-        return "{$header}.{$payload}." . static::createSignature($header . $payload);
+        return "{$headers}.{$payload}." . static::createSignature($headers . $payload);
     }
 
     /**
@@ -145,11 +145,8 @@ class JsonWebToken
         list($header, $payload, $signature) = explode('.', $token);
 
         if (static::verifySignature($header . $payload, $signature)) {
-            $tokenProperties = $tokenProperties
-                ->merge(static::decodeData($header))
-                ->merge(static::decodeData($payload));
-            $tokenProperties
-                ->put('valid', static::isValidTimestamp($tokenProperties->get('expires')));
+            $tokenProperties = $tokenProperties->merge(static::decodeData($payload));
+            $tokenProperties->put('valid', static::isValidTimestamp($tokenProperties->get('expires')));
         }
         return $tokenProperties;
     }
@@ -195,11 +192,12 @@ class JsonWebToken
 
     /**
      * Make Encryption Key
+     * @param int $length
      * @return string
      */
-    protected static function generateSecret(): string
+    public static function generateSecret(int $length = 48): string
     {
-        return bin2hex(openssl_random_pseudo_bytes(128));
+        return bin2hex(openssl_random_pseudo_bytes($length));
     }
 
     /**
@@ -222,15 +220,36 @@ class JsonWebToken
      */
     public static function extendToken(Collection $token, Carbon $carbon, array $claims = []): string
     {
-        return Crypt::encryptString($token->toBase()->merge($claims)->put('expires', $carbon->toDateTimeString())->toJson());
+        $headers = static::getHeaders();
+        $payload = static::encodeData(
+            $token
+                ->toBase()
+                ->except(['valid', 'alg', 'typ', 'expires'])
+                ->put('expires', $carbon->toDateTimeString())
+                ->merge($claims)
+                ->toArray()
+        );
+        return "{$headers}.{$payload}." . static::createSignature($headers . $payload);
+    }
+
+    /**
+     * Get the token headers.
+     * @return string
+     */
+    protected static function getHeaders(): string
+    {
+        return static::encodeData([
+            "alg" => "HS512",
+            "typ" => "JWT",
+        ]);
     }
 
     /**
      * Is the timestamp claim valid.
-     * @param string $timestamp
+     * @param string|null $timestamp
      * @return bool
      */
-    public static function isValidTimestamp(string $timestamp): bool
+    public static function isValidTimestamp(?string $timestamp = null): bool
     {
         return Carbon::parse($timestamp)->greaterThanOrEqualTo(Carbon::now());
     }
