@@ -132,7 +132,7 @@ class JsonWebToken
             "user"    => $user->getKey(),
         ], $data));
 
-        return "{$headers}.{$payload}." . static::createSignature($headers . $payload);
+        return "{$headers}.{$payload}." . static::createSignature("{$headers}.{$payload}");
     }
 
     /**
@@ -143,8 +143,8 @@ class JsonWebToken
     public static function parseToken(?string $token = null): Collection
     {
         if (Str::substrCount($token, '.') === 2) {
-            list($header, $payload, $signature) = explode('.', $token);
-            if (static::verifySignature($header . $payload, $signature)) {
+            list($headers, $payload, $signature) = explode('.', $token);
+            if (static::verifySignature("{$headers}.{$payload}", $signature)) {
                 $tokenProperties = Collection::make(static::decodeData($payload));
                 $tokenProperties->put('valid', static::isValidTimestamp($tokenProperties->get('expires')));
                 return $tokenProperties;
@@ -240,7 +240,7 @@ class JsonWebToken
                 ->merge($claims)
                 ->toArray()
         );
-        return "{$headers}.{$payload}." . static::createSignature($headers . $payload);
+        return "{$headers}.{$payload}." . static::createSignature("{$headers}.{$payload}");
     }
 
     /**
