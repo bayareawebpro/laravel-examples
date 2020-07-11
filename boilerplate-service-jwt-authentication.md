@@ -1,5 +1,8 @@
 # Json Web Token (JWT) Authentication
 
+> Considerations:  The token is an encrypted string that might get long.  Maybe implement compression on the json string before encryption and after decryption? 
+> https://www.php.net/manual/en/function.gzcompress.php
+
 ### Register in Auth Service Provider.
 
 ```php
