@@ -235,7 +235,7 @@ class JsonWebToken
         $payload = static::encodeData(
             $token
                 ->toBase()
-                ->only(['valid', 'alg', 'typ'])
+                ->except(['valid', 'alg', 'typ'])
                 ->put('expires', $carbon->toDateTimeString())
                 ->merge($claims)
                 ->toArray()
