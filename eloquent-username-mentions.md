@@ -97,10 +97,9 @@ trait HasMentions
 
 namespace App\Services;
 
+use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Str;
-use Throwable;
 
 class Mentions
 {
