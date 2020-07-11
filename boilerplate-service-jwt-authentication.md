@@ -63,14 +63,14 @@ $newToken = JsonWebToken::extendToken(request()->jwt(), now()->addHours(3), ['ke
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Config;
 use stdClass;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Database\Eloquent\Model;
 
 /**
