@@ -20,10 +20,9 @@ use Illuminate\Contracts\View\Factory;
  * Start: /?redesign
  * Stop: /?redesign=false
  *
- * View: app.content.single
+ * View: cms.content.single
  * Alt: redesign.content.single
  */
-
 class ABTestResolver
 {
     /**
@@ -37,7 +36,7 @@ class ABTestResolver
      * @var array
      */
     protected array $rejectedPathSegments = [
-        'cms'
+        'cms',
     ];
 
     /**
@@ -45,49 +44,23 @@ class ABTestResolver
      * @var array
      */
     protected array $allowedStatusCodes = [
-        200
+        200,
     ];
 
 
     /**
      * Handle an incoming request.
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @return Response
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if($this->userHasRequestedABTest($request)){
+        if ($this->userHasRequestedABTest($request)) {
             return $this->resolveAlternateView($next($request));
         }
 
         return $next($request);
-    }
-
-    /**
-     * Get the alternate view.
-     * @param Response $response
-     * @return Response
-     */
-    protected function resolveAlternateView(Response $response): Response
-    {
-        if(in_array($response->getStatusCode(), $this->allowedStatusCodes) && $response->original instanceof View){
-
-            $name = $this->formatViewPath($response);
-
-            /** @var $factory Factory  */
-            $factory = app(Factory::class);
-
-            if($factory->exists($name)){
-
-                return response(
-                    $factory->make($name, $response->original->getData()),
-                    $response->getStatusCode(),
-                    $response->headers->all()
-                );
-            }
-        }
-        return $response;
     }
 
     /**
@@ -105,6 +78,31 @@ class ABTestResolver
             }
         }
         return $request->session()->has('redesign');
+    }
+
+    /**
+     * Resolve the alternate view.
+     * @param Response $response
+     * @return Response
+     */
+    protected function resolveAlternateView(Response $response): Response
+    {
+        if (in_array($response->getStatusCode(), $this->allowedStatusCodes) && $response->original instanceof View) {
+
+            $name = $this->formatViewPath($response);
+
+            /** @var $factory Factory */
+            $factory = app(Factory::class);
+
+            if ($factory->exists($name)) {
+                return response(
+                    $factory->make($name, $response->original->getData()),
+                    $response->getStatusCode(),
+                    $response->headers->all()
+                );
+            }
+        }
+        return $response;
     }
 
     /**
