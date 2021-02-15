@@ -95,11 +95,7 @@ class ABTestResolver
             $factory = app(Factory::class);
 
             if ($factory->exists($name)) {
-                return response(
-                    $factory->make($name, $response->original->getData()),
-                    $response->getStatusCode(),
-                    $response->headers->all()
-                );
+                $response->setContent($factory->make($name, $response->original->getData()));
             }
         }
         return $response;
