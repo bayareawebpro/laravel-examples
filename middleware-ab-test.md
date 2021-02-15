@@ -89,7 +89,7 @@ class ABTestResolver
     {
         if (in_array($response->getStatusCode(), $this->allowedStatusCodes) && $response->original instanceof View) {
 
-            $name = $this->formatViewPath($response);
+            $name = $this->formatViewPath($response->original->getName());
 
             /** @var $factory Factory */
             $factory = app(Factory::class);
@@ -107,17 +107,16 @@ class ABTestResolver
 
     /**
      * Format the overriding view path.
-     * @param Response $response
+     * @param string $path
      * @return string
      */
-    protected function formatViewPath(Response $response): string
+    protected function formatViewPath(string $path): string
     {
-        return Str::of($response->original->getName())
+        return Str::of($path)
             ->split('/\./')
             ->reject(fn($item) => in_array($item, $this->rejectedPathSegments))
             ->prepend($this->pathPrefix)
             ->join('.');
     }
 }
-
 ```
