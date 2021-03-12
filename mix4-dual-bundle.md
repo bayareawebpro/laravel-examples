@@ -38,7 +38,7 @@ webpack-front.mix.js
 
 ## Tailwind Config (one per bundle)
 
-Add a config file to specify the paths for PurgeCSS.
+Create a Tailwind config file for each bundle, modifying the PurgeCSS paths to match the subdirectory of each bundle.
 
 ```javascript
 {
@@ -55,7 +55,8 @@ Add a config file to specify the paths for PurgeCSS.
 
 ## Mix Config (one per bundle)
 
-Create a new mix file for each bundle, modifying the paths to match the subdirectories.
+Create a mix file for each bundle, modifying the paths to match the subdirectory of each bundle.
+
 ```javascript
 cconst mix = require('laravel-mix');
 const WebpackRequireFrom = require("webpack-require-from");
@@ -107,7 +108,7 @@ Modify `config/view.php` to specify the new view paths.
 
 Use the mix helper second parameter to specify the bundle path.
 
-```
+```html
 <script type="text/javascript" src="{{ asset(mix('js/manifest.js', 'backend')) }}" defer></script>
 <script type="text/javascript" src="{{ asset(mix('js/vendor.js', 'backend')) }}" defer></script>
 <script type="text/javascript" src="{{ asset(mix('js/app.js', 'backend')) }}" defer></script>
@@ -116,10 +117,9 @@ Use the mix helper second parameter to specify the bundle path.
 
 ### Blade View Namespaces
 
-Add hint paths for view and components.
+Add hint paths for views and components.
 
 ```php
-
 View::addNamespace('backend', resource_path('backend/views')); // admin::layout
 Blade::componentNamespace('App\View\Backend', 'backend'); // <x-admin::alert/>
 
