@@ -104,7 +104,23 @@ Modify `config/view.php` to specify the new view paths.
 ],
 ```
 
-### Include Assets
+## Customize NPM Scripts
+```json
+"scripts": {
+    "back:dev": "mix --mix-config=webpack-back.mix.js",
+    "back:watch": "mix watch --mix-config=webpack-back.mix.js",
+    "back:watch-poll": "mix watch -- --watch-options-poll=1000 --mix-config=webpack-back.mix.js",
+    "back:hot": "mix watch --hot --mix-config=webpack-back.mix.js",
+    "back:prod": "mix --production --mix-config=webpack-back.mix.js",
+    "front:dev": "mix --mix-config=webpack-front.mix.js",
+    "front:watch": "mix watch --mix-config=webpack-front.mix.js",
+    "front:watch-poll": "mix watch -- --watch-options-poll=1000 --mix-config=webpack-front.mix.js",
+    "front:hot": "mix watch --hot --mix-config=webpack-front.mix.js",
+    "front:prod": "mix --production --mix-config=webpack-front.mix.js"
+},
+```
+
+## Include Assets
 
 Use the mix helper second parameter to specify the bundle path.
 
@@ -115,7 +131,7 @@ Use the mix helper second parameter to specify the bundle path.
 <link href="{{ asset(mix('css/app.css','backend')) }}" rel="stylesheet">
 ```
 
-### Blade View Namespaces
+## Blade View Namespaces
 
 Add hint paths for views and components.
 
