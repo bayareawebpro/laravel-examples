@@ -1,4 +1,4 @@
-# Laravel Mix Dual Bundle (v4)
+# Laravel Mix Dual Bundle
 
 ## Output Directory Structure
 ```
