@@ -1,12 +1,11 @@
-```
+```php
 $service = Service::make(config('my.config'));
 
 $service->name //configured, computed & cached;
 
 $service->toArray();
 ```
-
-```
+```php
 
 app()->bind(Service::class, function(){
     return app(Service::class, config('my.config'));
@@ -16,7 +15,7 @@ $service = app(Service::class);
 ```
 
 
-```
+```php
 <?php declare(strict_types=1);
 
 namespace App\Services;
