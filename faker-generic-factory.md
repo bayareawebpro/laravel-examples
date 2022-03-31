@@ -11,7 +11,7 @@ $lazyCollection = ContactSubmission::factory(100)->make([
   'name' => 'other'
 ]);
 
-$array = $lazyCollection->all();
+$itemsArray = $lazyCollection->all();
 
 ```
 
