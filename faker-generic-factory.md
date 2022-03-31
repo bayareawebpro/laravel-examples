@@ -76,7 +76,7 @@ abstract class AbstractFactory
     }
 
     /**
-     * Make new generator instance.
+     * Make new instance(s).
      */
     public function make(array $attributes = []): array|LazyCollection
     {
