@@ -36,6 +36,20 @@ class ContactSubmission extends AbstractFactory
             'message' => $this->faker->sentences(4, true),
         ];
     }
+    
+    /**
+     * Define an alternate state.
+     */
+    public function invalid(array $attributes): array
+    {
+        unset(
+            $attributes['name'],
+            $attributes['email'],
+            $attributes['message'],
+            $attributes['captcha'],
+        );
+        return $attributes;
+    }
 }
 
 ```
