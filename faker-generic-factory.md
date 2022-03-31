@@ -95,7 +95,7 @@ abstract class Factory
     }
 
     /**
-     * Define the default state.
+     * Queue state callback.
      */
     public function state(\Closure $closure): self
     {
