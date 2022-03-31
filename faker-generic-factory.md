@@ -13,7 +13,7 @@ $lazyCollection = ContactSubmission::factory(100)->make([
 
 $itemsArray = $lazyCollection->all();
 
-$invalidState = ContactSubmission::factory()->states(['invalid'])->make();
+$invalidState = ContactSubmission::factory()->invalid()->make();
 
 ```
 
