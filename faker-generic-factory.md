@@ -23,7 +23,7 @@ $invalidState = ContactSubmission::factory()->invalid()->make();
 
 namespace Tests\Factories;
 
-class ContactSubmission extends AbstractFactory
+class ContactSubmission extends Factory
 {
     /**
      * Define the default state.
@@ -40,15 +40,17 @@ class ContactSubmission extends AbstractFactory
     /**
      * Define an alternate state.
      */
-    public function invalid(array $attributes): array
+    public function invalid(): Factory
     {
-        unset(
-            $attributes['name'],
-            $attributes['email'],
-            $attributes['message'],
-            $attributes['captcha'],
-        );
-        return $attributes;
+        return $this->state(function(array $attributes){
+            unset(
+                $attributes['name'],
+                $attributes['email'],
+                $attributes['message'],
+                $attributes['captcha'],
+            );
+            return $attributes;
+        });
     }
 }
 
@@ -66,7 +68,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\LazyCollection;
 
-abstract class AbstractFactory
+abstract class Factory
 {
     protected int $count = 0;
     protected array $states = [];
@@ -95,9 +97,9 @@ abstract class AbstractFactory
     /**
      * Define the default state.
      */
-    public function states(string|array $states): self
+    public function state(\Closure $closure): self
     {
-        $this->states = Arr::wrap($states);
+        $this->states[] = $closure;
         return $this;
     }
 
@@ -116,8 +118,8 @@ abstract class AbstractFactory
     {
         $state = $this->definition();
 
-        foreach ($this->states as $method) {
-            $state = call_user_func([$this, $method], $state);
+        foreach ($this->states as $callback) {
+            $state = call_user_func($callback, $state);
         }
 
         return array_merge($state, $attributes);
@@ -137,4 +139,5 @@ abstract class AbstractFactory
         });
     }
 }
+
 ```
