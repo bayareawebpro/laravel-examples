@@ -13,6 +13,8 @@ $lazyCollection = ContactSubmission::factory(100)->make([
 
 $itemsArray = $lazyCollection->all();
 
+$invalidState = ContactSubmission::factory()->states(['invalid'])->make();
+
 ```
 
 ## Factory Class
@@ -46,13 +48,14 @@ class ContactSubmission extends AbstractFactory
 namespace Tests\Factories;
 
 use Faker\Generator as Faker;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\LazyCollection;
 
 abstract class AbstractFactory
 {
     protected int $count = 0;
-    protected array $attributes = [];
+    protected array $states = [];
 
     public function __construct(protected Faker $faker, protected int $times = 1)
     {
@@ -76,35 +79,48 @@ abstract class AbstractFactory
     }
 
     /**
-     * Make new instance(s).
+     * Define the default state.
+     */
+    public function states(string|array $states): self
+    {
+        $this->states = Arr::wrap($states);
+        return $this;
+    }
+
+    /**
+     * Make new generator instance.
      */
     public function make(array $attributes = []): array|LazyCollection
     {
-        $this->attributes = $attributes;
-        return $this->times > 1 ? $this->generator() : $this->generate();
+        return $this->times > 1 ? $this->generator($attributes) : $this->generate($attributes);
     }
 
     /**
      * Generate one instance.
      */
-    protected function generate(): array
+    protected function generate(array $attributes): array
     {
-        return array_merge($this->definition(), $this->attributes);
+        $state = $this->definition();
+
+        foreach ($this->states as $method) {
+            $state = call_user_func([$this, $method], $state);
+        }
+
+        return array_merge($state, $attributes);
     }
 
     /**
      * Generate multiple instances.
      */
-    protected function generator(): LazyCollection
+    protected function generator(array $attributes): LazyCollection
     {
-        return LazyCollection::make(function (){
+        return LazyCollection::make(function () use ($attributes) {
             while ($this->count < $this->times) {
                 $this->count++;
-                yield $this->generate();
+                yield $this->generate($attributes);
             }
             $this->count = 0;
         });
     }
 }
-
 ```
