@@ -22,7 +22,7 @@ $tracer->record(new \Exception('Test'), [
 
 ## Implmentmentation
 
-```
+```php
 <?php declare(strict_types=1);
 
 namespace App\Services;
