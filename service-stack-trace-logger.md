@@ -20,7 +20,7 @@ $tracer->record(new \Exception('Test'), [
 ]);
 ```
 
-## Implmentmentation
+## Service Class
 
 ```php
 <?php declare(strict_types=1);
