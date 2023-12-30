@@ -119,3 +119,121 @@ class MeiliSearch
 }
 
 ```
+
+
+```php
+<?php declare(strict_types=1);
+
+namespace App\Commands;
+
+use App\Models\Location;
+use App\Services\MeiliSearch as Engine;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Console\Command;
+
+class Meilisearch extends Command
+{
+    protected $signature = 'meilisearch {action} {keyword?}';
+
+    protected $description = 'Sync Index Settings and Data to Meilisearch API.';
+
+    public function handle(): int
+    {
+        $this->optimizeEnvironment();
+
+        return match ($this->argument('action')) {
+            'index:search' => $this->search(),
+            'index:create' => $this->createIndex(),
+            'index:stats' => $this->indexStats(),
+            'index:update' => $this->updateIndex(),
+            'index:destroy' => $this->deleteIndex(),
+            'documents:import' => $this->importAll(),
+            'index:tasks' => $this->indexTasks(),
+            'health' => $this->getHealth(),
+            'keys' => $this->getKeys(),
+            default => static::FAILURE
+        };
+    }
+
+    private function getKeys(): int
+    {
+        Engine::make()->getApiKeys()->dump();
+        return static::SUCCESS;
+    }
+
+    private function deleteIndex(): int
+    {
+        Engine::make()->flushIndex('locations')->dump();
+        Engine::make()->destroyIndex('locations')->dump();
+        return static::SUCCESS;
+    }
+
+    private function createIndex(): int
+    {
+        Engine::make()->createIndex('locations');
+        Engine::make()->getIndexStats('locations')->dump();
+        return static::SUCCESS;
+    }
+
+    private function updateIndex(): int
+    {
+        Engine::make()->updateIndexSettings('locations', Config::get('meilisearch.settings', []))->dump();
+        Engine::make()->getIndexStats('locations')->dump();
+        return static::SUCCESS;
+    }
+
+    private function indexStats(): int
+    {
+        Engine::make()->getIndexStats('locations')->dump();
+        return static::SUCCESS;
+    }
+
+    private function indexTasks(): int
+    {
+        $tasks = Engine::make()->getIndexTasks('locations');
+
+        $enqueued = $tasks->where('status', 'enqueued');
+        $succeeded = $tasks->where('status', 'succeeded');
+        $processing = $tasks->where('status', 'processing');
+        $failed = $tasks->whereNotIn('status', ['succeeded', 'enqueued', 'processing']);
+
+        $this->table(['Processing', 'Succeeded', 'Enqueued', 'Failed'], [
+            [$processing->count(), $succeeded->count(), $enqueued->count(), $failed->count()]
+        ]);
+
+        if ($failed->count()) {
+            $failed->dump();
+        }
+
+        return static::SUCCESS;
+    }
+
+    private function getHealth(): int
+    {
+        Engine::make()->getHealthStatus()->dump();
+        return static::SUCCESS;
+    }
+
+    private function importAll(): int
+    {
+        Config::set('scout.chunk', [
+            'searchable'   => 2500,
+            'unsearchable' => 2500,
+        ]);
+        $this->call('scout:import', [
+            'model' => Location::class
+        ]);
+        return static::SUCCESS;
+    }
+
+    private function search(): int
+    {
+        Location::search($this->argument('keyword'))
+            ->take(15)
+            ->get()
+            ->pluck('formattedAddress')
+            ->dump();
+        return static::SUCCESS;
+    }
+}
+```
