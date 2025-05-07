@@ -18,18 +18,31 @@ class EarlyHintsMiddleware
 {
     /**
      * Handle an incoming request.
-     *
      * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         /**
-         * @var $response \Illuminate\Http\Response
+         * @var \Illuminate\Http\Response $response 
          */
         $response = $next($request);
+
+        /**
+         * Reject invalid methods and Content-Types.
+         */
+        if (!$request->isMethod('GET') || $response->headers->get('Content-Type') !== 'text/html') {
+            return $response;
+        }
+
+        /**
+         * Add CDN Domain for pre-connect.
+         */
         $cdnDomain = Config::get('filesystems.disks.spaces.url');
         $response->header('Link', "<$cdnDomain>; rel=preconnect", false);
 
+        /**
+         * Add Vite Preloaded Assets.
+         */
         foreach (Vite::preloadedAssets() as $url => $preload) {
             $directives = Collection::make($preload)->mapWithKeys(function (string $value) {
                 $parts = Str::of($value)
