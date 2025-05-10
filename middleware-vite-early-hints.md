@@ -3,7 +3,7 @@
 ```php
 <?php declare(strict_types=1);
 
-namespace Jgw555\CmsCore\Cloudflare;
+namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
@@ -16,21 +16,17 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EarlyHintsMiddleware
 {
-    /**
-     * Handle an incoming request.
-     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
         /**
-         * @var \Illuminate\Http\Response $response 
+         * @var $response \Illuminate\Http\Response
          */
         $response = $next($request);
 
         /**
          * Reject invalid methods and Content-Types.
          */
-        if (!$request->isMethod('GET') || $response->headers->get('Content-Type') !== 'text/html') {
+        if (!$this->isHtmlRequest($request, $response)) {
             return $response;
         }
 
@@ -56,7 +52,13 @@ class EarlyHintsMiddleware
 
             $response->header('Link', "<$url>; rel=$rel; as=$as", false);
         }
+        
         return $response;
+    }
+
+    public function isHtmlRequest(Request $request, Response $response): bool
+    {
+        return ($request->isMethod('GET') && Str::contains($response->headers->get('Content-Type'), 'text/html'));
     }
 }
 ```
